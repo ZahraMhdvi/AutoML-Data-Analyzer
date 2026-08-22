@@ -69,4 +69,8 @@ class TargetDetector:
                     }
                 )
 
-        return candidates
+        return sorted(
+            candidates,
+            key=lambda x: x["score"],
+            reverse=True
+        )
