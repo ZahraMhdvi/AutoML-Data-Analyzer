@@ -12,10 +12,7 @@ class CategoricalEncoder:
     def get_categorical_columns(self):
 
         return list(
-            self.dataframe.select_dtypes(
-                include=["object", "string"]
-            ).columns
-        )
+            self.dataframe.select_dtypes(include=["object", "string"]).columns)
 
 
 
@@ -37,7 +34,6 @@ class CategoricalEncoder:
             if unique_count == 2:
 
                 encoder = LabelEncoder()
-
                 df[column] = encoder.fit_transform(df[column])
 
 
