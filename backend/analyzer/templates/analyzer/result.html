@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+    <title>
+        Analysis Result
+    </title>
+</head>
+
+
+<body>
+
+
+<h1>
+Dataset Analysis Result
+</h1>
+
+
+<h2>
+Dataset Shape
+</h2>
+
+
+<p>
+Rows:
+{{ result.profile.shape.rows }}
+</p>
+
+
+<p>
+Columns:
+{{ result.profile.shape.columns }}
+</p>
+
+
+
+<h2>
+ML Eligibility
+</h2>
+
+
+<p>
+Classification:
+
+{{ result.eligibility.classification.available }}
+
+</p>
+
+
+<p>
+Clustering:
+
+{{ result.eligibility.clustering.available }}
+
+</p>
+
+
+</body>
+
+</html>
