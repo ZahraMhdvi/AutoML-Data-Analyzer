@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>
+        Dataset Analyzer
+    </title>
+</head>
+
+
+<body>
+
+<h1>
+    Upload Dataset
+</h1>
+
+
+<form method="POST"
+      enctype="multipart/form-data">
+
+    {% csrf_token %}
+
+
+    <input type="file"
+           name="dataset">
+
+
+    <button type="submit">
+        Analyze
+    </button>
+
+
+</form>
+{% if file_path %}
+
+<h3>
+File Uploaded Successfully
+</h3>
+
+<p>
+{{ file_path }}
+</p>
+
+{% endif %}
+
+</body>
+
+</html>
