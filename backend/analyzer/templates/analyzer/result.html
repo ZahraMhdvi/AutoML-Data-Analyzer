@@ -18,7 +18,7 @@ Dataset Analysis Result
 
 
 <h2>
-Dataset Shape
+Dataset Overview
 </h2>
 
 
@@ -34,24 +34,204 @@ Columns:
 </p>
 
 
+<p>
+Duplicates:
+{{ result.profile.duplicates }}
+</p>
 
 <h2>
-ML Eligibility
+Missing Values
+</h2>
+
+
+<table border="1">
+
+<tr>
+    <th>
+        Column
+    </th>
+
+    <th>
+        Missing Count
+    </th>
+</tr>
+
+
+{% for column, value in result.profile.missing_values.items %}
+
+<tr>
+
+<td>
+{{ column }}
+</td>
+
+
+<td>
+{{ value }}
+</td>
+
+</tr>
+
+
+{% endfor %}
+
+
+</table>
+<h2>
+Column Analysis
+</h2>
+
+
+<table border="1">
+
+
+<tr>
+
+<th>
+Column
+</th>
+
+
+<th>
+Technical Type
+</th>
+
+
+<th>
+Semantic Type
+</th>
+
+</tr>
+
+
+
+{% for column, info in result.columns.items %}
+
+
+<tr>
+
+<td>
+{{ column }}
+</td>
+
+
+<td>
+{{ info.technical_type }}
+</td>
+
+
+<td>
+{{ info.semantic_type }}
+</td>
+
+
+</tr>
+
+
+{% endfor %}
+
+
+</table>
+<h2>
+Target Candidates
+</h2>
+
+
+<table border="1">
+
+
+<tr>
+
+<th>
+Column
+</th>
+
+
+<th>
+Score
+</th>
+
+
+<th>
+Reason
+</th>
+
+
+</tr>
+
+
+
+{% for target in result.targets %}
+
+
+<tr>
+
+<td>
+{{ target.column }}
+</td>
+
+
+<td>
+{{ target.score }}
+</td>
+
+
+<td>
+
+{% for reason in target.reason %}
+
+{{ reason }}
+
+<br>
+
+{% endfor %}
+
+</td>
+
+
+</tr>
+
+
+{% endfor %}
+
+</table>
+
+<h2>
+ML Readiness
 </h2>
 
 
 <p>
+
 Classification:
 
-{{ result.eligibility.classification.available }}
+{% if result.eligibility.classification.available %}
+
+Available
+
+{% else %}
+
+Not Available
+
+{% endif %}
 
 </p>
 
 
+
 <p>
+
 Clustering:
 
-{{ result.eligibility.clustering.available }}
+{% if result.eligibility.clustering.available %}
+
+Available
+
+{% else %}
+
+Not Available
+
+{% endif %}
 
 </p>
 
