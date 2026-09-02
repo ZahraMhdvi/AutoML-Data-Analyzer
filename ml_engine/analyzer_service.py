@@ -39,6 +39,7 @@ class DatasetAnalyzer:
 
         result = eligibility.evaluate()
         return {
+            "dataframe": dataframe,
             "profile": profile,
             "columns": columns,
             "targets": targets,
