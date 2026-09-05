@@ -15,9 +15,20 @@ print("\nSTEP 1 RESULT")
 print(analysis_result)
 
 
-pipeline = PreprocessingPipeline(analysis_result["dataframe"])
-clean_dataframe = pipeline.process()
+pipeline = PreprocessingPipeline(
 
+    analysis_result["dataframe"],
+
+    "classification",
+
+    "Churn"
+
+)
+
+
+processed_result = pipeline.process()
+clean_dataframe = processed_result["dataframe"]
+target = processed_result["target"]
 print("\nSTEP 2 RESULT")
 print(clean_dataframe.shape)
 
