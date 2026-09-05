@@ -25,14 +25,14 @@ class DatasetFeatureAnalyzer:
         rows = context.clean_data_shape["rows"]
         columns = context.clean_data_shape["columns"]
         thresholds = config["thresholds"]
-        features["small_dataset"] = (rows < thresholds["small_dataset_max_rows"])
+        features["small_dataset"] = (rows <= thresholds["small_dataset_max_rows"])
         features["large_dataset"] = (rows > thresholds["large_dataset_min_rows"])
         features["high_dimension"] = (columns > thresholds["high_dimension_min_features"])
 
         numeric_count = 0
         categorical_count = 0
 
-        for column, info in context.columns.items():
+        for column, info in context.raw_columns.items():
             semantic_type = info.get("semantic_type")
 
             if semantic_type == "numerical":
@@ -44,7 +44,7 @@ class DatasetFeatureAnalyzer:
 
 
         features["numeric_features"] = (numeric_count > 0)
-        features["categorical_features"] = (categorical_count > 0)
+        features["categorical_features"] = ( categorical_count > 0)
         features["mixed_features"] = (numeric_count > 0 and categorical_count > 0)
 
         return features

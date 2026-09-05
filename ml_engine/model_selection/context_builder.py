@@ -1,23 +1,23 @@
-from ml_engine.model_selection.model_selection_context import (ModelSelectionContext)
+from ml_engine.model_selection.model_selection_context import (
+    ModelSelectionContext
+)
 
 
 class ModelSelectionContextBuilder:
 
 
-    def build(self,analysis_result,clean_dataframe,user_preferences):
-
-
-        problem_type = self._detect_problem_type(analysis_result["eligibility"])
+    def build(self,analysis_result,clean_dataframe,user_preferences,problem_type):
         target = self._extract_target(analysis_result["targets"])
+        processed_columns = {
 
+            column: {
 
-        clean_data_shape = {
+                "technical_type":
+                    str(clean_dataframe[column].dtype)
 
-            "rows":
-                clean_dataframe.shape[0],
+            }
 
-            "columns":
-                clean_dataframe.shape[1]
+            for column in clean_dataframe.columns
 
         }
 
@@ -25,26 +25,17 @@ class ModelSelectionContextBuilder:
         return ModelSelectionContext(
             problem_type=problem_type,
             profile=analysis_result["profile"],
-            columns=analysis_result["columns"],
+            raw_columns=analysis_result["columns"],
+            processed_columns=processed_columns,
             target=target,
-            clean_data_shape=clean_data_shape,
+            clean_data_shape={
+                "rows": clean_dataframe.shape[0],
+                "columns": clean_dataframe.shape[1]
+
+            },
             user_preferences=user_preferences
+
         )
-
-
-
-    def _detect_problem_type(self,eligibility):
-
-
-        if eligibility["classification"]["available"]:
-            return "classification"
-
-
-
-        if eligibility["clustering"]["available"]:
-            return "clustering"
-
-        return "unknown"
 
 
 
