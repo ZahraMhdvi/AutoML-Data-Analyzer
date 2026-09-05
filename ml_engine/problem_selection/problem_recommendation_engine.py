@@ -13,10 +13,7 @@ class ProblemRecommendationEngine:
 
         classification = self._analyze_classification(analysis_result)
         clustering = self._analyze_clustering(analysis_result)
-        recommendations = [
-            classification,
-            clustering
-        ]
+        recommendations = [classification,clustering]
 
         recommendations.sort(key=lambda x: x.score,reverse=True)
         for index, recommendation in enumerate(recommendations,start=1):
