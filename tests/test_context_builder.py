@@ -9,7 +9,23 @@ from ml_engine.model_selection.context_builder import (ModelSelectionContextBuil
 analyzer = DatasetAnalyzer()
 analysis = analyzer.analyze("data/customers.xlsx")
 df = analysis["dataframe"]
-pipeline = PreprocessingPipeline(df)
+pipeline = PreprocessingPipeline(
+
+    analysis["dataframe"],
+
+    "classification",
+
+    "Churn"
+
+)
+
+
+processed_result = pipeline.process()
+
+
+clean_dataframe = processed_result["dataframe"]
+
+target = processed_result["target"]
 clean_df = pipeline.process()
 builder = ModelSelectionContextBuilder()
 preferences = UserPreferences(
