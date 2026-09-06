@@ -113,7 +113,7 @@ CLASSIFICATION_QUESTIONS = [
                 "خیر، داده‌ها تقریباً تمیز هستند",
 
                 "value":
-                "clean_data"
+                "no_noise"
             },
 
             {
