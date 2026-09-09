@@ -19,13 +19,13 @@ class CategoricalEncoder:
 
     def encode(self):
 
-        print(self.dataframe.dtypes)
+
 
         df = self.dataframe.copy()
 
         categorical_columns = self.get_categorical_columns()
 
-        print(categorical_columns)
+
 
         for column in categorical_columns:
 

@@ -44,7 +44,23 @@ class AlgorithmScorer:
             elif feature in weaknesses:
                 score -= 10
                 unmatched.append(feature)
+        priority_order = [
+            "high_accuracy",
+            "very_high_accuracy",
+            "handles_noise",
+            "mixed_features",
+            "interpretable",
+            "fast"
+        ]
 
+        matched = sorted(
+            matched,
+            key=lambda x: (
+                priority_order.index(x)
+                if x in priority_order
+                else 999
+            )
+        )
         return AlgorithmScoreResult(
 
             algorithm_name=algorithm_name,
