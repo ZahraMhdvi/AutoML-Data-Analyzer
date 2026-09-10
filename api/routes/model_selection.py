@@ -1,7 +1,10 @@
-from fastapi import APIRouter
-from api.schemas.model_selection_schema import (ModelSelectionRequest)
+from fastapi import (APIRouter,UploadFile,File,Form)
+import json
+import tempfile
+from ml_engine.model_selection.application.model_selection_application import (ModelSelectionApplication)
+
+
 from ml_engine.model_selection.algorithm_registry import (CLASSIFICATION_ALGORITHMS)
-from ml_engine.model_selection.application.model_selection_application import ModelSelectionApplication
 
 router = APIRouter()
 application = ModelSelectionApplication()
@@ -9,15 +12,29 @@ application = ModelSelectionApplication()
 
 
 @router.post("/model-selection")
-def select_model(request: ModelSelectionRequest):
+def select_model(
+
+        file: UploadFile = File(...),
+        problem_type: str = Form(...),
+        target: str = Form(...),
+        preferences: str = Form(...)
+):
 
 
-    response = application.run(
-        request.dataset_path,
-        request.problem_type,
-        request.target,
-        request.preferences.model_dump(),
-        CLASSIFICATION_ALGORITHMS
+    preferences = json.loads(
+        preferences
     )
+    with tempfile.NamedTemporaryFile(delete=False,suffix=".xlsx") as temp_file:
+        temp_file.write(file.file.read())
+        dataset_path = temp_file.name
+    response = application.run(
+        dataset_path,
+        problem_type,
+        target,
+        preferences,
+        CLASSIFICATION_ALGORITHMS
+
+    )
+
 
     return response
