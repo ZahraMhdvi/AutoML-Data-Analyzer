@@ -14,10 +14,23 @@ class AnalysisApplication:
 
         analysis_result = self.analyzer.analyze(file_path)
         recommendations = (self.problem_engine.recommend(analysis_result))
+        recommended_targets = [
+            target
+            for target in analysis_result["targets"]
+            if target["score"] >= 80
+        ]
 
+        possible_targets = [
+            target
+            for target in analysis_result["targets"]
+            if target["score"] < 80
+        ]
         return {
 
             "profile": analysis_result["profile"],
             "problem_recommendations": recommendations,
-            "target_candidates": analysis_result["targets"]
+            "recommended_targets": recommended_targets,
+            "possible_targets": possible_targets,
+            "target_required": len(recommended_targets) == 0
+
         }
