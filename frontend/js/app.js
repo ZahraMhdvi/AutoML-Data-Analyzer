@@ -1,3 +1,4 @@
+let analysisData = null;
 const button = document.getElementById("analyzeBtn");
 
 
@@ -44,6 +45,7 @@ button.addEventListener(
 
         const result =
             await response.json();
+            analysisData = result.data;
 
 
 
@@ -111,10 +113,25 @@ function renderAnalysis(data) {
 function createProblemCard(problem) {
 
 
+    const explanation =
+        getProblemExplanation(
+            problem.problem_type
+        );
+
+
     const reasons =
         problem.reasons
         .map(
-            r => `<li>${r}</li>`
+            r => `<li>${translateReason(r)}</li>`
+        )
+        .join("");
+
+
+
+    const examples =
+        explanation.examples
+        .map(
+            e => `<li>${e}</li>`
         )
         .join("");
 
@@ -124,15 +141,21 @@ function createProblemCard(problem) {
 
     <div class="card">
 
+
         <h3>
-            ${problem.problem_type}
+            ${explanation.title}
         </h3>
 
 
         <p>
-            امتیاز:
-            ${problem.score}
+            ${explanation.description}
         </p>
+
+
+
+        <h4>
+            چرا پیشنهاد شده؟
+        </h4>
 
 
         <ul>
@@ -140,8 +163,31 @@ function createProblemCard(problem) {
         </ul>
 
 
+
+        <h4>
+            مثال کاربرد
+        </h4>
+
+
+        <ul>
+            ${examples}
+        </ul>
+
+
+
+        <p>
+            میزان تناسب:
+            <b>
+            ${getScoreText(problem.score)}
+            </b>
+        </p>
+
+
+
         <button onclick="selectProblem('${problem.problem_type}')">
-            انتخاب ${problem.problem_type}
+
+            انتخاب این روش
+
         </button>
 
 
@@ -150,7 +196,6 @@ function createProblemCard(problem) {
     `;
 
 }
-
 
 
 let selectedProblemType = null;
@@ -190,17 +235,185 @@ function showTargetSelection(){
         document.getElementById("result");
 
 
-    container.innerHTML = `
+    const recommended =
+        analysisData.recommended_targets;
+
+
+    const possible =
+        analysisData.possible_targets;
+
+
+
+    let html = `
 
         <h2>
-            انتخاب هدف پیش‌بینی
+            انتخاب نتیجه‌ای که می‌خواهید پیش‌بینی شود
         </h2>
 
-
-        <p>
-            در حال دریافت Target های پیشنهادی...
-        </p>
-
     `;
+
+
+
+    if(recommended.length > 0){
+
+
+        html += `
+
+        <h3>
+            پیشنهاد اصلی سیستم
+        </h3>
+
+        `;
+
+
+        recommended.forEach(target => {
+
+
+            html += `
+
+            <div class="card">
+
+                <h4>
+                    ${target.column}
+                </h4>
+
+                <p>
+                    میزان اطمینان:
+                    بسیار بالا
+                </p>
+
+                <ul>
+
+                    ${target.reason
+                    .map(
+                        r=>`<li>${r}</li>`
+                    )
+                    .join("")}
+
+                </ul>
+
+
+                <button>
+                    انتخاب ${target.column}
+                </button>
+
+
+            </div>
+
+            `;
+
+
+        });
+
+
+    }
+
+
+
+    if(possible.length > 0){
+
+
+        html += `
+
+        <h3>
+            گزینه‌های دیگر
+        </h3>
+
+        `;
+
+
+        possible.forEach(target=>{
+
+
+            html += `
+
+            <button>
+                ${target.column}
+            </button>
+
+            `;
+
+
+        });
+
+
+    }
+
+
+
+    if(
+        analysisData.target_required
+    ){
+
+        html += `
+
+        <div class="card">
+
+            <h3>
+                نتیجه مشخصی پیدا نشد
+            </h3>
+
+
+            <p>
+                آیا می‌خواهید خودتان نتیجه‌ای تعریف کنید
+                یا سیستم پیشنهاد دهد؟
+            </p>
+
+
+            <button>
+                تعریف نتیجه توسط من
+            </button>
+
+
+            <button>
+                پیشنهاد توسط سیستم
+            </button>
+
+
+        </div>
+
+        `;
+
+    }
+
+
+    container.innerHTML = html;
+
+
+}
+
+function translateReason(reason) {
+
+
+    const dictionary = {
+
+
+        "Classification is possible":
+        "اطلاعات لازم برای پیش‌بینی یک نتیجه مشخص وجود دارد",
+
+
+        "Strong target candidate detected":
+        "یک ستون نتیجه مناسب در داده‌ها پیدا شد",
+
+
+        "Enough features available for clustering":
+        "اطلاعات کافی برای پیدا کردن گروه‌های مشابه وجود دارد",
+
+
+        "Multiple numerical features available":
+        "چندین ویژگی عددی برای مقایسه داده‌ها وجود دارد",
+
+
+        "Dataset size is suitable for clustering":
+        "تعداد داده‌ها برای پیدا کردن الگو مناسب است",
+
+
+        "Target column exists, classification may be more suitable":
+        "یک نتیجه مشخص در داده‌ها وجود دارد و شاید پیش‌بینی آن مناسب‌تر باشد"
+
+    };
+
+
+    return dictionary[reason] || reason;
 
 }
