@@ -1,6 +1,7 @@
-let analysisData = null;
-let selectedTarget = null;
-let selectedProblemType = null;
+window.analysisData = null;
+window.selectedProblemType = null;
+window.selectedTarget = null;
+window.selectedPreferences = null;
 const button = document.getElementById("analyzeBtn");
 
 
@@ -206,7 +207,7 @@ function createProblemCard(problem) {
 function selectProblem(type) {
 
 
-    selectedProblemType = type;
+    window.selectedProblemType = type;
 
 
     console.log(
@@ -451,7 +452,7 @@ function createTargetCard(target, recommended){
 function selectTarget(target){
 
 
-    selectedTarget = target;
+    window.selectedTarget = target;
 
 
     console.log(

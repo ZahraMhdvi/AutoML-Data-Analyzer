@@ -1,16 +1,18 @@
-from fastapi import APIRouter, UploadFile, File, Form
+from fastapi import (APIRouter,UploadFile,File,Form)
 import json
 import tempfile
 import logging
 from ml_engine.model_selection.application.model_selection_application import (ModelSelectionApplication)
-from ml_engine.model_selection.algorithm_registry import (CLASSIFICATION_ALGORITHMS)
-from api.schemas.model_selection_response_schema import (ModelSelectionAPIResponse)
+from ml_engine.model_selection.algorithm_registry import (CLASSIFICATION_ALGORITHMS,CLUSTERING_ALGORITHMS)
+from api.schemas.model_selection_response_schema import (ModelSelectionAPIResponse
+)
 
 
 logger = logging.getLogger(__name__)
 
 
 router = APIRouter()
+
 
 application = ModelSelectionApplication()
 
@@ -26,7 +28,7 @@ def select_model(
 
         problem_type: str = Form(...),
 
-        target: str = Form(...),
+        target: str = Form(""),
 
         preferences: str = Form(...)
 
@@ -37,6 +39,10 @@ def select_model(
         preferences = json.loads(
             preferences
         )
+
+
+        if problem_type == "clustering":
+            target = None
 
 
         with tempfile.NamedTemporaryFile(
@@ -53,48 +59,50 @@ def select_model(
             dataset_path = temp_file.name
 
 
+        if problem_type == "classification":
+            algorithms = CLASSIFICATION_ALGORITHMS
+
+
+        elif problem_type == "clustering":
+            algorithms = CLUSTERING_ALGORITHMS
+
+        else:
+
+            raise ValueError("Unsupported problem type")
+
 
         response = application.run(
-
             dataset_path,
-
             problem_type,
-
             target,
-
             preferences,
-
-            CLASSIFICATION_ALGORITHMS
-
+            algorithms
         )
 
 
         return ModelSelectionAPIResponse(
-
             success=True,
-
             data=response,
-
             error=None
-
         )
 
 
     except json.JSONDecodeError:
 
-
         return ModelSelectionAPIResponse(
 
             success=False,
-
             data=None,
-
-            error={"code": "INVALID_PREFERENCES","message": "Preferences format is invalid"}
+            error={
+                "code": "INVALID_PREFERENCES",
+                "message": "Preferences format is invalid"
+            }
 
         )
 
 
-    except Exception:
+
+    except Exception as e:
 
 
         logger.exception(
@@ -105,15 +113,10 @@ def select_model(
         return ModelSelectionAPIResponse(
 
             success=False,
-
             data=None,
-
             error={
-
                 "code": "MODEL_SELECTION_ERROR",
-
-                "message": "Unable to process dataset"
-
+                "message": str(e)
             }
 
         )

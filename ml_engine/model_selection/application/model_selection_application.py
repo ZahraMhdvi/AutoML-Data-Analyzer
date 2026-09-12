@@ -25,16 +25,6 @@ class ModelSelectionApplication:
         analysis_result = (self.analyzer.analyze(file_path))
         processed = (PreprocessingPipeline(analysis_result["dataframe"],problem_type,target).process())
 
-        context = (
-            self.context_builder.build(
-                analysis_result,
-                processed["dataframe"],
-                user_preferences,
-                problem_type
-
-            )
-        )
-
         if isinstance(user_preferences, dict):
             user_preferences = UserPreferences(
 
@@ -54,18 +44,53 @@ class ModelSelectionApplication:
 
                 noise_presence=user_preferences.get(
                     "noise_presence"
+                ),
+
+
+                cluster_count_known=user_preferences.get(
+                    "cluster_count_known"
+                ),
+
+                cluster_shape=user_preferences.get(
+                    "cluster_shape"
+                ),
+
+                hierarchical_analysis=user_preferences.get(
+                    "hierarchical_analysis"
                 )
 
             )
+
+            context = (
+            self.context_builder.build(
+                analysis_result,
+                processed["dataframe"],
+                user_preferences,
+                problem_type
+
+            )
+        )
         mapped_preferences = (
             self.preference_service
             .map_preferences(
                 user_preferences
             )
         )
+        print(
+            "RAW USER PREF:",
+            user_preferences
+        )
+
+        print(
+            "MAPPED PREF:",
+            mapped_preferences
+        )
 
         normalized_preferences = (self.preference_normalizer.normalize(mapped_preferences))
-
+        print(
+            "NORMALIZED PREF:",
+            normalized_preferences
+        )
         ranking = (
             self.engine.select_models(
                 context,

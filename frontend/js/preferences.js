@@ -204,9 +204,8 @@ function submitPreferences(){
 
 
 
-    console.log(
-        preferences
-    );
+    selectedPreferences = preferences;
+    runModelSelection();
 
 
 }

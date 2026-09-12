@@ -18,8 +18,17 @@ class ModelSelectionResponseBuilder:
             )
         )
 
+        target = context.target
+
+        if context.problem_type == "clustering":
+            target = None
+
         return ModelSelectionResponse(
+
             problem_type=context.problem_type,
-            target=context.target,
+
+            target=target,
+
             recommendations=recommendations
+
         )
