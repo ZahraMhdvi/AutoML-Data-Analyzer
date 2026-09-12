@@ -445,24 +445,6 @@ function createTargetCard(target, recommended){
 
 
 }
-function showPreferences(){
-
-
-    document.getElementById("result").innerHTML = `
-
-    <h2>
-        تنظیمات تحلیل
-    </h2>
-
-
-    <p>
-        مرحله بعد: انتخاب ترجیحات کاربر
-    </p>
-
-
-    `;
-
-}
 
 
 
