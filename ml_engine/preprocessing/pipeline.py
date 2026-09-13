@@ -45,9 +45,7 @@ class PreprocessingPipeline:
 
         elif self.problem_type == "clustering":
 
-
-            if self.target in df.columns:
-
+            if self.target and self.target in df.columns:
                 df = df.drop(
                     columns=[self.target]
                 )

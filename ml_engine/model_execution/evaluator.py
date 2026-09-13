@@ -1,0 +1,140 @@
+from sklearn.metrics import (
+    accuracy_score,
+    precision_score,
+    recall_score,
+    f1_score,
+    silhouette_score
+)
+
+
+
+class ModelEvaluator:
+
+
+    def evaluate(
+            self,
+            model,
+            X,
+            y,
+            problem_type
+    ):
+
+
+        if problem_type == "classification":
+
+            return self._classification_metrics(
+                model,
+                X,
+                y
+            )
+
+
+        elif problem_type == "clustering":
+
+            return self._clustering_metrics(
+                model,
+                X
+            )
+
+
+        else:
+
+            raise ValueError(
+                "Unsupported problem type"
+            )
+
+
+
+    def _classification_metrics(
+            self,
+            model,
+            X,
+            y
+    ):
+
+
+        predictions = model.predict(X)
+
+
+        return {
+
+            "accuracy":
+                accuracy_score(
+                    y,
+                    predictions
+                ),
+
+            "precision":
+                precision_score(
+                    y,
+                    predictions,
+                    average="weighted",
+                    zero_division=0
+                ),
+
+            "recall":
+                recall_score(
+                    y,
+                    predictions,
+                    average="weighted",
+                    zero_division=0
+                ),
+
+            "f1":
+                f1_score(
+                    y,
+                    predictions,
+                    average="weighted",
+                    zero_division=0
+                )
+
+        }
+
+
+
+    def _clustering_metrics(
+            self,
+            model,
+            X
+    ):
+
+
+        if hasattr(model, "labels_"):
+
+            labels = model.labels_
+
+        else:
+
+            labels = model.predict(X)
+
+
+
+        unique_clusters = set(labels)
+
+
+        result = {
+
+            "clusters":
+                len(unique_clusters)
+
+        }
+
+
+        if len(unique_clusters) > 1:
+
+
+            result["silhouette_score"] = (
+                silhouette_score(
+                    X,
+                    labels
+                )
+            )
+
+        else:
+
+
+            result["silhouette_score"] = None
+
+
+
+        return result
