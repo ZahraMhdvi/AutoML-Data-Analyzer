@@ -1,20 +1,42 @@
+import pytest
 import pandas as pd
-
-from ml_engine.preprocessing.pipeline import PreprocessingPipeline
 from ml_engine.model_execution.executor import ModelExecutionService
+from ml_engine.preprocessing.pipeline import PreprocessingPipeline
 
-def test_classification_execution():
+
+@pytest.mark.parametrize(
+    "algorithm",
+    [
+        "Logistic Regression",
+        "Decision Tree",
+        "Random Forest"
+    ]
+)
+def test_classification_models(algorithm):
 
 
     df = pd.read_excel("data/customer_dataset.xlsx")
-    pipeline = PreprocessingPipeline(df,"classification","Churn")
-    result = pipeline.process()
+
+
+    pipeline = PreprocessingPipeline(
+        df,
+        "classification",
+        "Churn"
+    )
+
+
+    processed = pipeline.process()
+
+
     service = ModelExecutionService()
-    output = service.execute(
-        "Random Forest",
-        result["dataframe"],
-        result["target"],
+
+
+    result = service.execute(
+        algorithm,
+        processed["dataframe"],
+        processed["target"],
         "classification"
     )
 
-    assert "metrics" in output
+
+    assert "metrics" in result
