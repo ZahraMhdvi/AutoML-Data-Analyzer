@@ -11,58 +11,26 @@ from sklearn.metrics import (
 class ModelEvaluator:
 
 
-    def evaluate(
-            self,
-            model,
-            X,
-            y,
-            problem_type
-    ):
+    def evaluate(self,model,X,y=None,problem_type=None):
 
 
         if problem_type == "classification":
-
-            return self._classification_metrics(
-                model,
-                X,
-                y
-            )
-
+            return self._classification_metrics(model,X,y)
 
         elif problem_type == "clustering":
-
-            return self._clustering_metrics(
-                model,
-                X
-            )
-
+            return self._clustering_metrics(model,X)
 
         else:
-
-            raise ValueError(
-                "Unsupported problem type"
-            )
+            raise ValueError("Unsupported problem type")
 
 
-
-    def _classification_metrics(
-            self,
-            model,
-            X,
-            y
-    ):
-
+    def _classification_metrics(self,model,X,y):
 
         predictions = model.predict(X)
-
-
         return {
 
             "accuracy":
-                accuracy_score(
-                    y,
-                    predictions
-                ),
+                accuracy_score(y,predictions),
 
             "precision":
                 precision_score(
