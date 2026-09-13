@@ -22,9 +22,15 @@ class AlgorithmScorer:
             )
         )
 
+        print("ALGORITHM:", algorithm_name)
+        print("PREFERENCES:", preferences)
+        print("EXPANDED:", expanded_preferences)
+        print("DATASET FEATURES:", dataset_features)
+        print("STRENGTHS:", strengths)
+
         for capability in expanded_preferences:
             if capability in strengths:
-                score += 25
+                score += 40
                 matched.append(capability)
 
             elif capability in weaknesses:
@@ -38,7 +44,7 @@ class AlgorithmScorer:
                 continue
 
             if feature in strengths:
-                score += 20
+                score += 10
                 matched.append(feature)
 
             elif feature in weaknesses:
@@ -61,11 +67,25 @@ class AlgorithmScorer:
                 else 999
             )
         )
+        reasons = []
+        limitations = []
+
+        for capability in matched:
+            reasons.append(
+                f"به دلیل داشتن قابلیت {capability} امتیاز دریافت کرد"
+            )
+
+        for capability in unmatched:
+            limitations.append(
+                f"در قابلیت {capability} محدودیت دارد"
+            )
+
         return AlgorithmScoreResult(
 
             algorithm_name=algorithm_name,
             score=max(score, 0),
             matched=matched,
-            unmatched=unmatched
-
+            unmatched=unmatched,
+            reasons=reasons,
+            limitations=limitations
         )

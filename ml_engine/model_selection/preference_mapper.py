@@ -47,24 +47,39 @@ def map_clustering_preferences(preferences: UserPreferences):
         "irregular_shapes": False,
         "hierarchical_analysis": False,
         "fast": False
-
     }
 
 
+    if preferences.cluster_count_known is True:
 
-    if preferences.cluster_count_known == "known_clusters":
         mapped_preferences["known_clusters"] = True
 
-    elif preferences.cluster_count_known == "unknown_clusters":
+
+    elif preferences.cluster_count_known is False:
+
         mapped_preferences["unknown_clusters"] = True
 
+
+
+
     if preferences.noise_presence == "has_noise":
+
         mapped_preferences["handles_noise"] = True
 
-    if preferences.cluster_shape == "irregular_clusters":
+
+
+
+    if preferences.cluster_shape == "irregular":
+
         mapped_preferences["irregular_shapes"] = True
 
-    if preferences.hierarchical_analysis == "need_hierarchy":
+
+
+
+    if preferences.hierarchical_analysis is True:
+
         mapped_preferences["hierarchical_analysis"] = True
+
+
 
     return mapped_preferences

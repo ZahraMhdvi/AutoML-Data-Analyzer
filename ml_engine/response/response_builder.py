@@ -7,6 +7,18 @@ class ResponseBuilder:
     def __init__(self):
         self.explanation_engine = ExplanationEngine()
 
+    def get_compatibility(self,score):
+
+        if score >= 70:
+            return "high"
+
+        elif score >= 40:
+            return "medium"
+
+        else:
+            return "low"
+
+
     def build(self,score_results,algorithms ):
         responses = []
 
@@ -38,6 +50,8 @@ class ResponseBuilder:
                 algorithm=explanation["algorithm"],
 
                 score=explanation["score"],
+
+                compatibility=self.get_compatibility(explanation["score"]),
 
                 rank=index + 1,
 

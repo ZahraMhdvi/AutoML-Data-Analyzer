@@ -1,4 +1,7 @@
-let analysisData = null;
+window.analysisData = null;
+window.selectedProblemType = null;
+window.selectedTarget = null;
+window.selectedPreferences = null;
 const button = document.getElementById("analyzeBtn");
 
 
@@ -198,13 +201,13 @@ function createProblemCard(problem) {
 }
 
 
-let selectedProblemType = null;
+
 
 
 function selectProblem(type) {
 
 
-    selectedProblemType = type;
+    window.selectedProblemType = type;
 
 
     console.log(
@@ -236,19 +239,23 @@ function showTargetSelection(){
 
 
     const recommended =
-        analysisData.recommended_targets;
+        analysisData.recommended_targets || [];
 
 
     const possible =
-        analysisData.possible_targets;
+        analysisData.possible_targets || [];
 
 
 
     let html = `
 
         <h2>
-            انتخاب نتیجه‌ای که می‌خواهید پیش‌بینی شود
+            انتخاب نتیجه مورد نظر
         </h2>
+
+        <p>
+            سیستم این موارد را برای پیش‌بینی مناسب تشخیص داده است.
+        </p>
 
     `;
 
@@ -269,38 +276,10 @@ function showTargetSelection(){
         recommended.forEach(target => {
 
 
-            html += `
-
-            <div class="card">
-
-                <h4>
-                    ${target.column}
-                </h4>
-
-                <p>
-                    میزان اطمینان:
-                    بسیار بالا
-                </p>
-
-                <ul>
-
-                    ${target.reason
-                    .map(
-                        r=>`<li>${r}</li>`
-                    )
-                    .join("")}
-
-                </ul>
-
-
-                <button>
-                    انتخاب ${target.column}
-                </button>
-
-
-            </div>
-
-            `;
+            html += createTargetCard(
+                target,
+                true
+            );
 
 
         });
@@ -316,22 +295,19 @@ function showTargetSelection(){
         html += `
 
         <h3>
-            گزینه‌های دیگر
+            سایر گزینه‌های قابل بررسی
         </h3>
 
         `;
 
 
-        possible.forEach(target=>{
+        possible.forEach(target => {
 
 
-            html += `
-
-            <button>
-                ${target.column}
-            </button>
-
-            `;
+            html += createTargetCard(
+                target,
+                false
+            );
 
 
         });
@@ -355,20 +331,19 @@ function showTargetSelection(){
 
 
             <p>
-                آیا می‌خواهید خودتان نتیجه‌ای تعریف کنید
-                یا سیستم پیشنهاد دهد؟
+                می‌توانید خودتان نتیجه تعریف کنید
+                یا اجازه دهید سیستم پیشنهاد دهد.
             </p>
 
 
             <button>
-                تعریف نتیجه توسط من
+                تعریف دستی نتیجه
             </button>
 
 
             <button>
-                پیشنهاد توسط سیستم
+                پیشنهاد سیستم
             </button>
-
 
         </div>
 
@@ -378,7 +353,6 @@ function showTargetSelection(){
 
 
     container.innerHTML = html;
-
 
 }
 
@@ -417,3 +391,79 @@ function translateReason(reason) {
     return dictionary[reason] || reason;
 
 }
+
+
+function createTargetCard(target, recommended){
+
+
+    return `
+
+    <div class="card">
+
+
+        <h3>
+            ${target.column}
+        </h3>
+
+
+        <p>
+
+            ${
+                recommended
+                ?
+                "پیشنهاد مناسب‌تر برای پیش‌بینی"
+                :
+                "گزینه جایگزین"
+            }
+
+        </p>
+
+
+        <ul>
+
+            ${
+                target.reason
+                .map(
+                    r => `<li>${r}</li>`
+                )
+                .join("")
+            }
+
+        </ul>
+
+
+
+        <button onclick="selectTarget('${target.column}')">
+
+            انتخاب این نتیجه
+
+        </button>
+
+
+    </div>
+
+    `;
+
+
+}
+
+
+
+function selectTarget(target){
+
+
+    window.selectedTarget = target;
+
+
+    console.log(
+        "Selected target:",
+        selectedTarget
+    );
+
+
+    showPreferences();
+
+
+}
+
+
