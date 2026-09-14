@@ -9,7 +9,10 @@ from ml_engine.preprocessing.pipeline import PreprocessingPipeline
     [
         "Logistic Regression",
         "Decision Tree",
-        "Random Forest"
+        "Random Forest",
+        "XGBoost",
+        "SVM",
+        "KNN"
     ]
 )
 def test_classification_models(algorithm):

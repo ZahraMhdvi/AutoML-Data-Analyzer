@@ -2,7 +2,7 @@ from ml_engine.preprocessing.missing_handler import MissingHandler
 from ml_engine.preprocessing.outlier_detector import OutlierDetector
 from ml_engine.preprocessing.encoder import CategoricalEncoder
 from ml_engine.preprocessing.scaler import FeatureScaler
-
+from sklearn.preprocessing import LabelEncoder
 
 class PreprocessingPipeline:
 
@@ -32,13 +32,17 @@ class PreprocessingPipeline:
 
         if self.problem_type == "classification":
 
-
             if self.target in df.columns:
-
                 target_column = df[self.target]
 
                 df = df.drop(
                     columns=[self.target]
+                )
+
+                encoder = LabelEncoder()
+
+                target_column = encoder.fit_transform(
+                    target_column
                 )
 
 
