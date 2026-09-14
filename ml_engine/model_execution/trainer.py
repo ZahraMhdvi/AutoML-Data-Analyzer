@@ -1,10 +1,12 @@
 from sklearn.linear_model import LogisticRegression
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.ensemble import RandomForestClassifier
-
+from xgboost import XGBClassifier
 from sklearn.cluster import KMeans
 from sklearn.cluster import DBSCAN
 from sklearn.cluster import AgglomerativeClustering
+from sklearn.svm import SVC
+from sklearn.neighbors import KNeighborsClassifier
 
 from ml_engine.model_execution.clustering_optimizer import ClusteringOptimizer
 
@@ -51,6 +53,14 @@ class ModelTrainer:
             "Random Forest":
                 RandomForestClassifier(),
 
+            "XGBoost":
+                XGBClassifier(),
+
+            "SVM":
+                SVC(),
+
+            "KNN":
+                KNeighborsClassifier(),
 
             "KMeans":
                 KMeans(
