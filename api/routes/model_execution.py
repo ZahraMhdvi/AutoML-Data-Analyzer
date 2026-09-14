@@ -11,7 +11,6 @@ from ml_engine.model_execution.executor import (
     ModelExecutionService
 )
 
-
 from api.schemas.model_execution_response_schema import (
     ModelExecutionResponse
 )
@@ -26,10 +25,10 @@ execution_service = ModelExecutionService()
 
 
 @router.post(
-    "/run-model",
+    "/run-selected-model",
     response_model=ModelExecutionResponse
 )
-def run_model(
+def run_selected_model(
 
         file: UploadFile = File(...),
 
@@ -54,7 +53,6 @@ def run_model(
                 file.file.read()
             )
 
-
             path = temp.name
 
 
@@ -62,7 +60,6 @@ def run_model(
         df = pd.read_excel(
             path
         )
-
 
 
         pipeline = PreprocessingPipeline(
@@ -74,7 +71,6 @@ def run_model(
             target if target else None
 
         )
-
 
 
         processed = pipeline.process()
@@ -94,7 +90,6 @@ def run_model(
         )
 
 
-
         return ModelExecutionResponse(
 
             success=True,
@@ -104,7 +99,6 @@ def run_model(
             error=None
 
         )
-
 
 
     except Exception as e:
@@ -118,9 +112,11 @@ def run_model(
 
             error={
 
-                "code":"EXECUTION_ERROR",
+                "code":
+                    "EXECUTION_ERROR",
 
-                "message":str(e)
+                "message":
+                    str(e)
 
             }
 
