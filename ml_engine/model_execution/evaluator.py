@@ -3,7 +3,8 @@ from sklearn.metrics import (
     precision_score,
     recall_score,
     f1_score,
-    silhouette_score
+    silhouette_score,
+    confusion_matrix
 )
 
 
@@ -23,40 +24,66 @@ class ModelEvaluator:
         else:
             raise ValueError("Unsupported problem type")
 
-
     def _classification_metrics(self,model,X,y):
 
         predictions = model.predict(X)
+        matrix = confusion_matrix(
+            y,
+            predictions
+        )
+
+        classes = [
+            str(label)
+            for label in sorted(set(y))
+        ]
+
         return {
 
             "accuracy":
-                accuracy_score(y,predictions),
+                accuracy_score(
+                    y,
+                    predictions
+                ),
 
             "precision":
                 precision_score(
                     y,
                     predictions,
-                    average="weighted",
-                    zero_division=0
+                    average="weighted"
                 ),
 
             "recall":
                 recall_score(
                     y,
                     predictions,
-                    average="weighted",
-                    zero_division=0
+                    average="weighted"
                 ),
 
             "f1":
                 f1_score(
                     y,
                     predictions,
-                    average="weighted",
-                    zero_division=0
-                )
+                    average="weighted"
+                ),
+
+            "confusion_matrix":
+                [
+                    [
+                        int(value)
+                        for value in row
+                    ]
+                    for row in matrix
+                ],
+
+            "classes":
+                [
+                    str(label)
+                    for label in sorted(set(y))
+                ]
 
         }
+
+
 
     def _clustering_metrics(self,model,X):
 

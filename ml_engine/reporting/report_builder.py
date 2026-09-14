@@ -67,7 +67,11 @@ class ReportBuilder:
                         "confusion_matrix",
 
                     "title":
-                        "Confusion Matrix"
+                        "Confusion Matrix",
+                    "data":
+                        metrics.get(
+                            "confusion_matrix"
+                        )
 
                 }
 
