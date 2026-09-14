@@ -3,6 +3,7 @@ class ReportBuilder:
 
     def build(self,execution_result,problem_type):
 
+
         if problem_type == "classification":
             return self._classification_report(execution_result)
 
@@ -17,7 +18,6 @@ class ReportBuilder:
             )
 
 
-
     def _classification_report(self,result):
 
         metrics = result["metrics"]
@@ -27,8 +27,21 @@ class ReportBuilder:
                 result["algorithm"],
 
 
-            "type":
+            "problem_type":
                 "classification",
+
+
+            "summary": {
+
+                "main_metric":
+                    "accuracy",
+
+                "value":
+                    metrics.get(
+                        "accuracy"
+                    )
+
+            },
 
 
             "metrics":
@@ -38,13 +51,24 @@ class ReportBuilder:
             "charts":[
 
                 {
-                    "type":"bar",
-                    "title":"Model Performance",
-                    "data":metrics
+                    "type":
+                        "metric_bar",
+
+                    "title":
+                        "Model Performance",
+
+                    "data":
+                        metrics
+
                 },
 
                 {
-                    "type":"confusion_matrix"
+                    "type":
+                        "confusion_matrix",
+
+                    "title":
+                        "Confusion Matrix"
+
                 }
 
             ]
@@ -63,8 +87,18 @@ class ReportBuilder:
                 result["algorithm"],
 
 
-            "type":
+            "problem_type":
                 "clustering",
+
+
+            "summary": {
+
+                "clusters":
+                    metrics.get(
+                        "number_of_clusters"
+                    )
+
+            },
 
 
             "metrics":
@@ -74,11 +108,21 @@ class ReportBuilder:
             "charts":[
 
                 {
-                    "type":"cluster_distribution"
+                    "type":
+                        "cluster_distribution",
+
+                    "title":
+                        "Cluster Sizes"
+
                 },
 
                 {
-                    "type":"scatter"
+                    "type":
+                        "scatter",
+
+                    "title":
+                        "Cluster Visualization"
+
                 }
 
             ]
