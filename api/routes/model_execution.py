@@ -1,21 +1,9 @@
 from fastapi import APIRouter, UploadFile, File, Form
 import tempfile
 import pandas as pd
-
-
-from ml_engine.preprocessing.pipeline import (
-    PreprocessingPipeline
-)
-
-from ml_engine.model_execution.executor import (
-    ModelExecutionService
-)
-
-
-from api.schemas.model_execution_response_schema import (
-    ModelExecutionResponse
-)
-
+from ml_engine.preprocessing.pipeline import (PreprocessingPipeline)
+from ml_engine.model_execution.executor import (ModelExecutionService)
+from api.schemas.model_execution_response_schema import (ModelExecutionResponse)
 
 
 router = APIRouter()
