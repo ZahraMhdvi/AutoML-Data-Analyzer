@@ -134,7 +134,7 @@ function renderDashboard(data){
             Confusion Matrix
         </h3>
 
-        <canvas id="confusionChart"></canvas>
+        <div id="confusionChart"></div>
 
     </div>
 
@@ -149,65 +149,137 @@ function renderDashboard(data){
 
     if(metrics.confusion_matrix){
 
-        renderConfusionMatrix(
-            metrics.confusion_matrix
-        );
+                if(
+            metrics.confusion_matrix &&
+            metrics.classes
+        ){
+
+            renderConfusionMatrix(
+                metrics.confusion_matrix,
+                metrics.classes
+            );
+
+        }
 
     }
 
 }
 
 
-function renderConfusionMatrix(matrix){
+function renderConfusionMatrix(matrix, classes) {
 
 
-    const ctx =
-    document
-    .getElementById(
-        "confusionChart"
-    );
-
-
-    const labels =
-        matrix.map(
-            (_,index)=>
-            "Class " + index
+    const container =
+        document.getElementById(
+            "confusionChart"
         );
 
 
-    const values =
-        matrix.map(
-            row =>
-            row.reduce(
-                (sum,value)=>sum+value,
-                0
-            )
-        );
+    let max =
+        Math.max(
+            ...matrix.flat()
+        ) || 1;
 
 
 
-    new Chart(
-        ctx,
-        {
+    let html = `
 
-        type:"bar",
+    <div class="heatmap-wrapper">
 
-        data:{
+        <table class="heatmap-table">
 
-            labels:labels,
 
-            datasets:[{
+            <tr>
 
-                label:"Samples",
+                <th></th>
 
-                data:values
+                ${
+                    classes.map(
+                        c =>
+                        `<th>${c}</th>`
+                    ).join("")
+                }
 
-            }]
+            </tr>
+
+    `;
+
+
+
+    matrix.forEach(
+        (row,i)=>{
+
+
+            html += `
+
+            <tr>
+
+                <th>
+                    ${classes[i]}
+                </th>
+
+            `;
+
+
+            row.forEach(
+                (value,j)=>{
+
+
+                    const opacity =
+                        Math.max(
+                            value / max,
+                            0.2
+                        );
+
+
+                    const color =
+                        i === j
+                        ?
+                        `rgba(46,204,113,${opacity})`
+                        :
+                        `rgba(231,76,60,${opacity})`;
+
+
+
+                    html += `
+
+                    <td
+                    style="
+                    background:${color};
+                    "
+                    >
+
+                    ${value}
+
+                    </td>
+
+                    `;
+
+
+                }
+            );
+
+
+            html += `</tr>`;
+
 
         }
-
-        }
-
     );
 
+
+
+    html += `
+
+        </table>
+
+    </div>
+
+    `;
+
+
+    container.innerHTML = html;
+    console.log(
+        "HEATMAP HTML",
+        html
+    );
 }

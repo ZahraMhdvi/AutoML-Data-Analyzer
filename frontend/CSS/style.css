@@ -54,3 +54,36 @@ body {
     color: red;
 
 }
+
+.heatmap-wrapper {
+    width:100%;
+    display:flex;
+    justify-content:center;
+    direction:ltr;
+}
+
+
+.heatmap-table {
+    border-collapse:separate;
+    border-spacing:8px;
+    margin:20px auto;
+}
+
+
+.heatmap-table th {
+    min-width:60px;
+    height:40px;
+    text-align:center;
+    font-weight:bold;
+}
+
+
+.heatmap-table td {
+    width:70px;
+    height:70px;
+    text-align:center;
+    vertical-align:middle;
+    border-radius:10px;
+    font-size:18px;
+    font-weight:bold;
+}
