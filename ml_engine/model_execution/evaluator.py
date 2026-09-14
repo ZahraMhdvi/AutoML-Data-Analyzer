@@ -58,51 +58,24 @@ class ModelEvaluator:
 
         }
 
+    def _clustering_metrics(self,model,X):
 
+        labels = model.labels_
+        unique_labels = set(labels)
+        clusters = len(unique_labels - {-1})
 
-    def _clustering_metrics(
-            self,
-            model,
-            X
-    ):
-
-
-        if hasattr(model, "labels_"):
-
-            labels = model.labels_
-
-        else:
-
-            labels = model.predict(X)
-
-
-
-        unique_clusters = set(labels)
-
-
+        noise = sum(1 for label in labels if label == -1)
         result = {
 
-            "clusters":
-                len(unique_clusters)
-
+            "number_of_clusters": clusters,
+            "noise_points": noise
         }
 
-
-        if len(unique_clusters) > 1:
-
-
-            result["silhouette_score"] = (
-                silhouette_score(
-                    X,
-                    labels
-                )
-            )
+        if clusters > 1:
+            result["silhouette_score"] = (silhouette_score(X,labels))
 
         else:
 
-
             result["silhouette_score"] = None
-
-
 
         return result

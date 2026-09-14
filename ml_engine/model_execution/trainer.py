@@ -6,50 +6,40 @@ from sklearn.cluster import KMeans
 from sklearn.cluster import DBSCAN
 from sklearn.cluster import AgglomerativeClustering
 
+from ml_engine.model_execution.clustering_optimizer import ClusteringOptimizer
+
 
 class ModelTrainer:
 
+    def __init__(self):
 
-    def train(
-            self,
-            algorithm_name,
-            X,
-            y=None
-    ):
+        self.cluster_optimizer = ClusteringOptimizer()
 
+    def train(self,algorithm_name,X,y=None):
 
-        model = self._create_model(
-            algorithm_name
-        )
-
-
-        if y is not None:
-
-            model.fit(
-                X,
-                y
-            )
+        if algorithm_name == "KMeans" and y is None:
+            best_config = self.cluster_optimizer.find_best_k(X)
+            model = KMeans(n_clusters=best_config["n_clusters"],random_state=42)
 
         else:
 
-            model.fit(
-                X
-            )
+            model = self._create_model(algorithm_name)
 
+
+        if y is not None:
+            model.fit(X,y)
+
+        else:
+
+            model.fit(X)
 
         return model
 
 
 
-    def _create_model(
-            self,
-            algorithm_name
-    ):
-
+    def _create_model(self,algorithm_name):
 
         models = {
-
-
             "Logistic Regression":
                 LogisticRegression(),
 
