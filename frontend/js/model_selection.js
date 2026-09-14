@@ -64,8 +64,35 @@ async function runModelSelection(){
 function showModelResult(result){
 
 
-    document.getElementById("result")
-    .innerHTML = `
+    const container =
+        document.getElementById("result");
+
+
+    if(!result.success){
+
+
+        container.innerHTML = `
+
+        <div class="error">
+
+            ${result.error.message}
+
+        </div>
+
+        `;
+
+        return;
+
+    }
+
+
+
+    const recommendations =
+        result.data.recommendations;
+
+
+
+    container.innerHTML = `
 
 
     <h2>
@@ -73,15 +100,236 @@ function showModelResult(result){
     </h2>
 
 
-    <pre>
-        ${JSON.stringify(
-            result,
-            null,
-            2
-        )}
-    </pre>
+    <div class="cards">
+
+
+        ${
+            recommendations
+            .map(
+                model =>
+                createModelCard(model)
+            )
+            .join("")
+        }
+
+
+    </div>
 
 
     `;
+
+}
+
+
+
+function createModelCard(model){
+
+
+    const reasons =
+        model.reasons
+        .map(
+            r => `<li>${r}</li>`
+        )
+        .join("");
+
+
+
+    const limitations =
+        model.limitations
+        .map(
+            l => `<li>${l}</li>`
+        )
+        .join("");
+
+
+
+    return `
+
+
+    <div class="card">
+
+
+        <h3>
+
+            ${model.algorithm}
+
+        </h3>
+
+
+
+        <p>
+
+            امتیاز سازگاری:
+
+            <b>
+            ${model.score}
+            </b>
+
+        </p>
+
+
+
+        <h4>
+            چرا پیشنهاد شده؟
+        </h4>
+
+
+        <ul>
+
+            ${reasons}
+
+        </ul>
+
+
+
+
+        <ul>
+
+            ${
+            limitations
+            ?
+            `
+            <h4>
+             محدودیت‌ها
+            </h4>
+            <ul>
+            ${limitations}
+            </ul>
+            `
+            :
+            `
+            <p>
+            محدودیت مشخصی برای این مدل ثبت نشده است
+            </p>
+            `
+            }
+
+        </ul>
+
+
+
+        <button
+        onclick="selectAlgorithm('${model.algorithm}')">
+
+            انتخاب این مدل
+
+        </button>
+
+
+
+    </div>
+
+
+    `;
+
+
+}
+
+
+
+function selectAlgorithm(algorithm){
+
+
+    window.selectedAlgorithm = algorithm;
+
+
+    console.log(
+        "Selected algorithm:",
+        selectedAlgorithm
+    );
+
+
+    runSelectedModel();
+
+}
+
+
+
+async function runSelectedModel(){
+
+
+    const formData = new FormData();
+
+
+
+    const file =
+        document.getElementById(
+            "datasetFile"
+        ).files[0];
+
+
+
+    formData.append(
+        "file",
+        file
+    );
+
+
+
+    formData.append(
+        "algorithm",
+        window.selectedAlgorithm
+    );
+
+
+
+    formData.append(
+        "problem_type",
+        window.selectedProblemType
+    );
+
+
+
+    formData.append(
+        "target",
+        window.selectedProblemType === "clustering"
+        ?
+        ""
+        :
+        window.selectedTarget
+    );
+
+
+
+    const response =
+    await fetch(
+        "http://127.0.0.1:8000/run-model",
+        {
+            method:"POST",
+            body:formData
+        }
+    );
+
+
+
+    const result =
+        await response.json();
+
+
+
+    showExecutionResult(result);
+
+}
+
+
+function showExecutionResult(result){
+
+
+    if(!result.success){
+
+        document.getElementById("result").innerHTML =
+        `
+        <div class="error">
+        ${result.error.message}
+        </div>
+        `;
+
+        return;
+    }
+
+
+    renderDashboard(
+        result.data
+    );
 
 }
