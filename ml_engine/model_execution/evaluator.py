@@ -179,8 +179,9 @@ class ModelEvaluator:
             })
 
         cluster_profiles = (
-            self._generate_cluster_profiles(
-                cluster_summary
+            self._generate_dynamic_cluster_profiles(
+                cluster_summary,
+                X
             )
         )
         unique_labels = set(labels)
@@ -307,6 +308,68 @@ class ModelEvaluator:
 
                 "description":
                     description
+
+            })
+
+        return profiles
+
+    def _generate_dynamic_cluster_profiles(
+            self,
+            cluster_summary,
+            X
+    ):
+
+        profiles = []
+
+        global_mean = X.mean()
+
+        for cluster in cluster_summary:
+
+            features = cluster["features"]
+
+            differences = {}
+
+            for feature, value in features.items():
+                differences[feature] = abs(
+                    value - global_mean[feature]
+                )
+
+            important = sorted(
+                differences.items(),
+                key=lambda x: x[1],
+                reverse=True
+            )[:3]
+
+            profiles.append({
+
+                "cluster":
+                    cluster["cluster"],
+
+                "size":
+                    cluster["size"],
+
+                    "important_features":[
+
+                    {
+
+                        "feature": feature,
+
+                        "difference": float(
+                            difference
+                        ),
+
+                        "direction":
+                            (
+                                "above_average"
+                                if features[feature] > global_mean[feature]
+                                else "below_average"
+                            )
+
+                    }
+
+                    for feature, difference in important
+
+                ]
 
             })
 
