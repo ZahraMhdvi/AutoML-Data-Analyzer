@@ -87,3 +87,8 @@ body {
     font-size:18px;
     font-weight:bold;
 }
+
+
+.card:has(#featureChart){
+    width:600px;
+}

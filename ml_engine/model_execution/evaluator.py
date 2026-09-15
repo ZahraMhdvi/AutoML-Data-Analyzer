@@ -24,9 +24,10 @@ class ModelEvaluator:
         else:
             raise ValueError("Unsupported problem type")
 
-    def _classification_metrics(self,model,X,y):
+    def _classification_metrics(self, model, X, y):
 
         predictions = model.predict(X)
+
         matrix = confusion_matrix(
             y,
             predictions
@@ -36,6 +37,23 @@ class ModelEvaluator:
             str(label)
             for label in sorted(set(y))
         ]
+
+        feature_importance = None
+
+        if hasattr(model, "feature_importances_"):
+            feature_importance = [
+
+                {
+                    "feature": column,
+                    "importance": float(value)
+                }
+
+                for column, value in zip(
+                    X.columns,
+                    model.feature_importances_
+                )
+
+            ]
 
         return {
 
@@ -49,21 +67,24 @@ class ModelEvaluator:
                 precision_score(
                     y,
                     predictions,
-                    average="weighted"
+                    average="weighted",
+                    zero_division=0
                 ),
 
             "recall":
                 recall_score(
                     y,
                     predictions,
-                    average="weighted"
+                    average="weighted",
+                    zero_division=0
                 ),
 
             "f1":
                 f1_score(
                     y,
                     predictions,
-                    average="weighted"
+                    average="weighted",
+                    zero_division=0
                 ),
 
             "confusion_matrix":
@@ -76,10 +97,10 @@ class ModelEvaluator:
                 ],
 
             "classes":
-                [
-                    str(label)
-                    for label in sorted(set(y))
-                ]
+                classes,
+
+            "feature_importance":
+                feature_importance
 
         }
 

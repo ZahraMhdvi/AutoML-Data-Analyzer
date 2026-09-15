@@ -1,3 +1,4 @@
+let featureChartInstance = null;
 function renderMetricsChart(metrics){
 
 
@@ -137,13 +138,27 @@ function renderDashboard(data){
         <div id="confusionChart"></div>
 
     </div>
+    <div id="featureImportanceContainer">
+        <div class="card">
+    
+        <h3>
+            Feature Importance
+        </h3>
+    
+        <canvas 
+            id="featureChart"
+            style="height:400px">
+        </canvas>
+    
+    </div>
 
-
+    </div>
     `;
 
 
 
     renderMetricsChart(metrics);
+    renderFeatureImportance(metrics.feature_importance);
 
 
 
@@ -278,8 +293,132 @@ function renderConfusionMatrix(matrix, classes) {
 
 
     container.innerHTML = html;
-    console.log(
-        "HEATMAP HTML",
-        html
-    );
+}
+
+
+
+
+function renderFeatureImportance(features){
+
+
+    const container =
+        document.getElementById(
+            "featureImportanceContainer"
+        );
+
+
+    if(
+        !features ||
+        features.length === 0
+    ){
+
+        container.innerHTML = "";
+
+        return;
+
+    }
+
+
+    container.innerHTML = `
+
+    <div class="card">
+
+        <h3>
+            Feature Importance
+        </h3>
+
+        <canvas id="featureChart"></canvas>
+
+    </div>
+
+    `;
+
+
+
+    const sorted =
+        features
+        .filter(
+            x => x.feature !== "Customer_ID"
+        )
+        .sort(
+            (a,b)=>
+            b.importance - a.importance
+        )
+        .slice(0,10);
+
+
+
+    const values =
+        sorted.map(
+            x => x.importance * 100
+        );
+
+
+
+    const ctx =
+        document.getElementById(
+            "featureChart"
+        );
+
+
+    ctx.height = 400;
+
+
+
+    if(featureChartInstance){
+
+        featureChartInstance.destroy();
+
+    }
+
+
+    featureChartInstance =
+        new Chart(
+            ctx,
+            {
+
+            type:"bar",
+
+            data:{
+
+                labels:
+                    sorted.map(
+                        x=>x.feature
+                    ),
+
+                datasets:[{
+
+                    label:
+                    "Importance (%)",
+
+                    data:
+                    values
+
+                }]
+
+            },
+
+
+            options:{
+
+                indexAxis:"y",
+
+                scales:{
+
+                    x:{
+
+                        beginAtZero:true,
+
+                        max:
+                        Math.max(...values)+5
+
+                    }
+
+                }
+
+            }
+
+        });
+
+
 }
