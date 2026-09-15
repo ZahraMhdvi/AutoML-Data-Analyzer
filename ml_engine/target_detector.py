@@ -1,8 +1,13 @@
 class TargetDetector:
 
-    def __init__(self, dataframe, column_analysis):
+    def __init__(
+        self,
+        dataframe,
+        column_analysis
+    ):
         self.dataframe = dataframe
         self.column_analysis = column_analysis
+
 
     def has_target_keyword(self, column):
 
@@ -16,7 +21,10 @@ class TargetDetector:
             "churn",
             "bought",
             "purchase",
-            "fraud"
+            "fraud",
+            "response",
+            "default",
+            "diagnosis"
         ]
 
         column_name = column.lower()
@@ -26,6 +34,7 @@ class TargetDetector:
             for word in keywords
         )
 
+
     def has_reasonable_classes(self, column):
 
         unique_count = (
@@ -33,34 +42,45 @@ class TargetDetector:
             .nunique()
         )
 
-        return unique_count <= 20
+        return 2 <= unique_count <= 20
+
 
     def detect(self):
 
         candidates = []
+
+
         for column, info in self.column_analysis.items():
+
             if info["semantic_type"] == "identifier":
                 continue
-            if info["semantic_type"] == "numerical":
-                continue
+
+
             score = 0
             reasons = []
 
-            if self.has_reasonable_classes(column):
-                score += 50
-
-                reasons.append(
-                    "Low number of unique classes"
-                )
 
             if self.has_target_keyword(column):
-                score += 50
+
+                score += 80
 
                 reasons.append(
                     "Target keyword detected"
                 )
 
-            if score > 0:
+
+            if self.has_reasonable_classes(column):
+
+                score += 20
+
+                reasons.append(
+                    "Reasonable number of classes"
+                )
+
+
+            # فقط Targetهای با اطمینان بالا
+            if score >= 80:
+
                 candidates.append(
                     {
                         "column": column,
@@ -68,6 +88,7 @@ class TargetDetector:
                         "reason": reasons
                     }
                 )
+
 
         return sorted(
             candidates,

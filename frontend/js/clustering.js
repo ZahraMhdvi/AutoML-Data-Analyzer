@@ -150,13 +150,60 @@ function submitClusteringPreferences(){
 
 
 
-    console.log(
-        "CLUSTER PREF",
-        preferences
+        if(window.labelGenerationMode){
+
+        runClusteringForLabelGeneration();
+
+    }
+    else{
+
+        runModelSelection();
+
+    }
+
+}
+
+
+
+async function runClusteringForLabelGeneration(){
+
+
+    const formData =
+        new FormData();
+
+
+    const file =
+        document.getElementById(
+            "datasetFile"
+        ).files[0];
+
+
+    formData.append(
+        "file",
+        file
     );
 
 
 
-    runModelSelection();
+    const response =
+        await fetch(
+            "http://127.0.0.1:8000/generate-target-from-clusters",
+            {
+                method:"POST",
+                body:formData
+            }
+        );
+
+
+    const result =
+        await response.json();
+
+
+
+    console.log(
+        "GENERATED TARGET:",
+        result
+    );
+
 
 }

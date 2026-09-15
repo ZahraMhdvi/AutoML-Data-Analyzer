@@ -29,32 +29,27 @@ class EligibilityChecker:
 
         return features
 
-
-
-
     def check_classification(self):
-
-        if len(self.target_candidates) == 0:
-
-            return {
-                "available": False,
-                "reason": "No target candidate found"
-            }
-
 
         features = self.get_feature_columns()
 
-
         if len(features) == 0:
-
             return {
                 "available": False,
                 "reason": "No usable features found"
             }
 
+        if len(self.target_candidates) == 0:
+            return {
+                "available": True,
+                "requires_target_generation": True,
+                "target_candidates": [],
+                "features": features
+            }
 
         return {
             "available": True,
+            "requires_target_generation": False,
             "target_candidates": self.target_candidates,
             "features": features
         }

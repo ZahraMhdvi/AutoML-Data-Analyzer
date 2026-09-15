@@ -48,7 +48,7 @@ button.addEventListener(
 
         const result =
             await response.json();
-            analysisData = result.data;
+            window.analysisData = result.data;
 
 
 
@@ -206,14 +206,8 @@ function createProblemCard(problem) {
 
 function selectProblem(type) {
 
-
     window.selectedProblemType = type;
 
-
-    console.log(
-        "Selected:",
-        selectedProblemType
-    );
 
 
     if(type === "classification") {
@@ -316,40 +310,79 @@ function showTargetSelection(){
     }
 
 
+    if(analysisData.target_required){
 
-    if(
-        analysisData.target_required
-    ){
+            html += `
+        
+            <div class="card">
+        
+                <h3>
+                    نتیجه مشخصی پیدا نشد
+                </h3>
+        
+        
+                <p>
+                    برای انجام Classification باید Target ساخته شود.
+                </p>
+        
+        
+                <label>
+        
+                    <input
+                    type="radio"
+                    name="target_generation"
+                    value="manual">
+        
+                    خودم Target را وارد می‌کنم
+        
+                </label>
+        
+        
+                <br>
+        
+        
+                <label>
+        
+                    <input
+                    type="radio"
+                    name="target_generation"
+                    value="clustering">
+        
+                    سیستم با Clustering گروه‌بندی کند
+        
+                </label>
+        
+        
+                <br>
+        
+        
+                <label>
+        
+                    <input
+                    type="radio"
+                    name="target_generation"
+                    value="ai">
+        
+                    پیشنهاد هوشمند AI
+        
+                </label>
+        
+        
+                <br><br>
+        
+        
+                <button onclick="submitTargetGenerationMode()">
+        
+                    ادامه
+        
+                </button>
+        
+        
+            </div>
+        
+            `;
 
-        html += `
-
-        <div class="card">
-
-            <h3>
-                نتیجه مشخصی پیدا نشد
-            </h3>
-
-
-            <p>
-                می‌توانید خودتان نتیجه تعریف کنید
-                یا اجازه دهید سیستم پیشنهاد دهد.
-            </p>
-
-
-            <button>
-                تعریف دستی نتیجه
-            </button>
-
-
-            <button>
-                پیشنهاد سیستم
-            </button>
-
-        </div>
-
-        `;
-
-    }
+            }
 
 
     container.innerHTML = html;
@@ -463,6 +496,62 @@ function selectTarget(target){
 
     showPreferences();
 
+
+}
+
+
+function submitTargetGenerationMode(){
+
+
+    const mode =
+        document.querySelector(
+            'input[name="target_generation"]:checked'
+        )?.value;
+
+
+
+    if(!mode){
+
+        alert(
+            "یک روش انتخاب کنید"
+        );
+
+        return;
+
+    }
+
+
+
+    window.targetGenerationMode = mode;
+    window.labelGenerationMode =
+    mode === "clustering";
+
+    if(mode === "clustering"){
+
+    window.labelGenerationMode = true;
+
+    window.selectedProblemType = "clustering";
+
+    showClusteringPreferences();
+
+    }
+
+    if(mode === "manual"){
+
+        console.log(
+            "Manual target selected"
+        );
+
+    }
+
+
+    if(mode === "ai"){
+
+        console.log(
+            "AI target suggestion selected"
+        );
+
+    }
 
 }
 
