@@ -97,10 +97,7 @@ class ReportBuilder:
 
             "summary": {
 
-                "clusters":
-                    metrics.get(
-                        "number_of_clusters"
-                    )
+                "clusters": metrics.get("cluster_count")
 
             },
 

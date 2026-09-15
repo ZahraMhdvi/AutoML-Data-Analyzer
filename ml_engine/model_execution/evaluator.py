@@ -6,7 +6,8 @@ from sklearn.metrics import (
     silhouette_score,
     confusion_matrix
 )
-
+from collections import Counter
+from sklearn.decomposition import PCA
 
 
 class ModelEvaluator:
@@ -104,23 +105,66 @@ class ModelEvaluator:
 
         }
 
-
-
-    def _clustering_metrics(self,model,X):
+    def _clustering_metrics(self, model, X):
 
         labels = model.labels_
-        unique_labels = set(labels)
-        clusters = len(unique_labels - {-1})
 
-        noise = sum(1 for label in labels if label == -1)
+        pca = PCA(n_components=2)
+
+        reduced = pca.fit_transform(X)
+
+        cluster_points = [
+
+            {
+                "x": float(point[0]),
+                "y": float(point[1]),
+                "cluster": int(label)
+            }
+
+            for point, label in zip(
+                reduced,
+                labels
+            )
+
+        ]
+        cluster_sizes = {
+            str(label): int(count)
+            for label, count in Counter(labels).items()
+        }
+        unique_labels = set(labels)
+
+        clusters = len(
+            unique_labels - {-1}
+        )
+
+        noise = sum(
+            1
+            for label in labels
+            if label == -1
+        )
+
         result = {
 
-            "number_of_clusters": clusters,
-            "noise_points": noise
+            "cluster_count":
+                clusters,
+
+            "noise_points":
+                noise,
+            "cluster_sizes":
+                cluster_sizes,
+            "cluster_points":
+                cluster_points
+
         }
 
         if clusters > 1:
-            result["silhouette_score"] = (silhouette_score(X,labels))
+
+            result["silhouette_score"] = (
+                silhouette_score(
+                    X,
+                    labels
+                )
+            )
 
         else:
 
