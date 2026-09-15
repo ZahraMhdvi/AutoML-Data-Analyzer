@@ -8,6 +8,8 @@ from sklearn.metrics import (
 )
 from collections import Counter
 from sklearn.decomposition import PCA
+from sklearn.preprocessing import StandardScaler
+from sklearn.decomposition import PCA
 
 
 class ModelEvaluator:
@@ -109,9 +111,13 @@ class ModelEvaluator:
 
         labels = model.labels_
 
+        scaled_X = StandardScaler().fit_transform(X)
+
         pca = PCA(n_components=2)
 
-        reduced = pca.fit_transform(X)
+        reduced = pca.fit_transform(
+            scaled_X
+        )
 
         cluster_points = [
 

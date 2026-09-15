@@ -60,9 +60,119 @@ function renderMetricsChart(metrics){
 
 }
 
-
-
 function renderDashboard(data){
+
+
+    if(
+        data.report.problem_type === "clustering"
+    ){
+
+        renderClusteringDashboard(data);
+
+    }
+    else{
+
+        renderClassificationDashboard(data);
+
+    }
+
+}
+
+function renderClusteringDashboard(data){
+
+
+    const metrics = data.metrics;
+
+
+    document.getElementById("result")
+    .innerHTML = `
+
+
+    <h2>
+        داشبورد مدل ${data.algorithm}
+    </h2>
+
+
+    <div class="cards">
+
+
+        <div class="card">
+
+            <h3>
+            تعداد کلاسترها
+            </h3>
+
+            <h2>
+            ${metrics.cluster_count}
+            </h2>
+
+        </div>
+
+
+
+        <div class="card">
+
+            <h3>
+            Noise Points
+            </h3>
+
+            <h2>
+            ${metrics.noise_points}
+            </h2>
+
+        </div>
+
+
+
+        <div class="card">
+
+            <h3>
+            Silhouette Score
+            </h3>
+
+            <h2>
+            ${
+            metrics.silhouette_score
+            ?
+            (metrics.silhouette_score * 100).toFixed(2)+"%"
+            :
+            "-"
+            }
+            </h2>
+
+        </div>
+
+
+    </div>
+    <div class="card">
+    
+        <h3>
+        اندازه کلاسترها
+        </h3>
+    
+        <canvas id="clusterSizeChart"></canvas>
+    
+    </div>
+    <div class="card">
+
+    <h3>
+        نمایش کلاسترها
+    </h3>
+
+    <div style="height:500px">
+
+    <canvas id="clusterScatterChart"></canvas>
+
+    </div>
+
+    </div>
+
+    `;
+    renderClusterSizeChart(metrics.cluster_sizes);
+    renderClusterScatter(metrics.cluster_points);
+}
+
+function renderClassificationDashboard(data){
 
 
     const metrics =
@@ -419,6 +529,172 @@ function renderFeatureImportance(features){
             }
 
         });
+
+
+}
+
+
+
+function renderClusterSizeChart(clusterSizes){
+
+
+    const ctx =
+        document.getElementById(
+            "clusterSizeChart"
+        );
+
+
+    new Chart(
+        ctx,
+        {
+
+        type:"bar",
+
+        data:{
+
+            labels:
+                Object.keys(clusterSizes),
+
+
+            datasets:[{
+
+                label:
+                "Cluster Size",
+
+
+                data:
+                Object.values(clusterSizes)
+
+            }]
+
+        }
+
+    });
+
+
+}
+
+
+
+function renderClusterScatter(points){
+
+
+    const ctx =
+        document.getElementById(
+            "clusterScatterChart"
+        );
+
+
+    const clusters = {};
+
+
+    points.forEach(point => {
+
+
+        if(!clusters[point.cluster]){
+
+            clusters[point.cluster] = [];
+
+        }
+
+
+        clusters[point.cluster].push({
+
+            x: point.x,
+
+            y: point.y
+
+        });
+
+
+    });
+
+
+
+    const datasets =
+        Object.keys(clusters)
+        .map(cluster => ({
+
+
+            label:
+            "Cluster " + cluster,
+
+
+            data:
+            clusters[cluster],
+
+
+            pointRadius:2
+
+
+        }));
+
+
+
+    new Chart(
+        ctx,
+        {
+
+        type:"scatter",
+
+        data:{
+
+            datasets:datasets
+
+        },
+
+
+        options:{
+
+
+    maintainAspectRatio:false,
+
+
+    plugins:{
+
+        legend:{
+
+            position:"bottom",
+
+            labels:{
+
+                boxWidth:15,
+
+                padding:15
+
+            }
+
+        }
+
+    },
+
+
+    scales:{
+
+        x:{
+
+            title:{
+                display:true,
+                text:"PCA 1"
+            }
+
+        },
+
+
+        y:{
+
+            title:{
+                display:true,
+                text:"PCA 2"
+            }
+
+        }
+
+    }
+
+}
+
+    });
 
 
 }
