@@ -137,6 +137,52 @@ class ModelEvaluator:
             str(label): int(count)
             for label, count in Counter(labels).items()
         }
+
+        cluster_summary = []
+
+        profile_X = X.drop(
+            columns=[
+                "Customer_ID",
+                "Churn"
+            ],
+            errors="ignore"
+        )
+
+        for cluster in sorted(set(labels)):
+
+            if cluster == -1:
+                continue
+
+            cluster_data = profile_X[
+                labels == cluster
+                ]
+
+            cluster_summary.append({
+
+                "cluster": int(cluster),
+
+                "size": int(
+                    len(cluster_data)
+                ),
+
+                "features": {
+
+                    column:
+                        float(
+                            cluster_data[column].mean()
+                        )
+
+                    for column in cluster_data.columns
+
+                }
+
+            })
+
+        cluster_profiles = (
+            self._generate_cluster_profiles(
+                cluster_summary
+            )
+        )
         unique_labels = set(labels)
 
         clusters = len(
@@ -159,7 +205,11 @@ class ModelEvaluator:
             "cluster_sizes":
                 cluster_sizes,
             "cluster_points":
-                cluster_points
+                cluster_points,
+            "cluster_summary":
+                cluster_summary,
+            "cluster_profiles":
+                cluster_profiles,
 
         }
 
@@ -177,3 +227,87 @@ class ModelEvaluator:
             result["silhouette_score"] = None
 
         return result
+
+
+
+
+    def _generate_cluster_profiles(
+            self,
+            cluster_summary
+    ):
+
+        profiles = []
+
+        for cluster in cluster_summary:
+
+            description = []
+
+            features = cluster["features"]
+
+            if features.get("Age", 0) < -0.5:
+
+                description.append(
+                    "Younger customers"
+                )
+
+            elif features.get("Age", 0) > 0.5:
+
+                description.append(
+                    "Older customers"
+                )
+
+            if features.get("Income", 0) > 0.5:
+
+                description.append(
+                    "Higher income"
+                )
+
+            elif features.get("Income", 0) < -0.5:
+
+                description.append(
+                    "Lower income"
+                )
+
+            if features.get("Tenure_Months", 0) < -0.5:
+
+                description.append(
+                    "New customers"
+                )
+
+            elif features.get("Tenure_Months", 0) > 0.5:
+
+                description.append(
+                    "Long-term customers"
+                )
+
+            if features.get("Num_Transactions", 0) > 0.5:
+
+                description.append(
+                    "High transaction activity"
+                )
+
+            elif features.get("Num_Transactions", 0) < -0.5:
+
+                description.append(
+                    "Low transaction activity"
+                )
+
+            if features.get("Support_Calls", 0) > 0.5:
+                description.append(
+                    "High support usage"
+                )
+
+            profiles.append({
+
+                "cluster":
+                    cluster["cluster"],
+
+                "size":
+                    cluster["size"],
+
+                "description":
+                    description
+
+            })
+
+        return profiles
