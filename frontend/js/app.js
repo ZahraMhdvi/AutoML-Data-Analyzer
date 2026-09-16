@@ -535,11 +535,139 @@ function submitTargetGenerationMode(){
 
     if(mode === "ai"){
 
-        console.log(
-            "AI target suggestion selected"
+    generateAITarget();
+
+}
+
+
+}
+
+
+
+
+
+async function generateAITarget(){
+
+
+        const formData =
+            new FormData();
+
+
+        const file =
+            document.getElementById(
+                "datasetFile"
+            ).files[0];
+
+
+        formData.append(
+            "file",
+            file
         );
 
+
+        const response =
+            await fetch(
+                "http://127.0.0.1:8000/generate-target-with-ai",
+                {
+                    method:"POST",
+                    body:formData
+                }
+            );
+
+
+        const result =
+            await response.json();
+
+
+
+
+    window.generatedDatasetId =
+        result.data.dataset_id;
+
+
+
+
+
+        if(!result.success){
+
+        document.getElementById("result").innerHTML =
+
+        `
+        <div class="error">
+    
+            ${result.error}
+    
+        </div>
+        `;
+
+        return;
+
     }
+
+
+
+    const target =
+        result.data.target_column
+    window.aiGeneratedDatasetId =
+        result.data.dataset_id;
+
+
+    const container =
+        document.getElementById("result");
+
+
+    container.innerHTML = `
+    
+    
+    <div class="card">
+    
+    
+        <h2>
+            پیشنهاد هوشمند AI
+        </h2>
+    
+    
+        <h3>
+            Target پیشنهادی:
+        </h3>
+    
+    
+        <p>
+    
+            <b>
+            ${target}
+            </b>
+    
+        </p>
+    
+    
+    
+        <h4>
+            دلیل پیشنهاد:
+        </h4>
+    
+    
+        <p>
+    
+            ${result.data.reason}
+    
+        </p>
+    
+    
+    
+        <button onclick="acceptAITarget('${target}')">
+    
+            تایید و ادامه
+    
+        </button>
+    
+    
+    
+    </div>
+    
+    
+    `;
+
 
 }
 
@@ -639,9 +767,27 @@ function submitManualTarget(){
         "classification";
 
 
-    console.log(
-        "MANUAL TARGET:",
-        target
+
+
+
+    showPreferences();
+
+}
+
+
+
+function acceptAITarget(target){
+
+
+    window.selectedTarget =
+    "generated_target";
+
+
+    window.selectedProblemType =
+        "classification";
+       console.log(
+        "SELECTED TARGET:",
+        window.selectedTarget
     );
 
 

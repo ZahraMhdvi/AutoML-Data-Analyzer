@@ -36,10 +36,7 @@ async function runModelSelection(){
     : window.selectedTarget
     );
 
-    console.log(
-        "SENDING PREFERENCES",
-        window.selectedPreferences
-    );
+
     formData.append(
     "preferences",
     JSON.stringify(window.selectedPreferences)
@@ -300,7 +297,19 @@ async function runSelectedModel(){
         window.selectedTarget
     );
 
-    formData.append(
+   if(window.generatedDatasetId){
+
+
+    window.selectedPreferences.generated_dataset_id =
+        window.generatedDatasetId;
+
+
+
+
+}
+
+
+formData.append(
     "preferences",
     JSON.stringify(
         window.selectedPreferences
@@ -324,10 +333,7 @@ async function runSelectedModel(){
         await response.json();
 
 
-    console.log(
-    "RUN MODEL RESPONSE:",
-    result
-);
+
     showExecutionResult(result);
 
 }

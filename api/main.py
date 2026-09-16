@@ -6,7 +6,7 @@ from api.routes.analysis import (router as analysis_router)
 from fastapi.middleware.cors import CORSMiddleware
 from api.routes import model_execution
 import uuid
-
+from api.routes import ai_target
 generated_datasets = {}
 app = FastAPI()
 
@@ -31,6 +31,7 @@ app.add_middleware(
 app.include_router(model_selection_router)
 app.include_router(analysis_router)
 app.include_router(model_execution.router)
+app.include_router(ai_target.router)
 @app.post("/generate-target-from-clusters")
 async def generate_target_from_clusters(
     file: UploadFile = File(...)
