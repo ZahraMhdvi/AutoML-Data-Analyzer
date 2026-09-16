@@ -36,10 +36,6 @@ def run_model(
 
         preferences = json.loads(preferences)
 
-        print(
-            "EXECUTION PREFS:",
-            preferences
-        )
         with tempfile.NamedTemporaryFile(
                 delete=False,
                 suffix=".xlsx"
@@ -75,7 +71,23 @@ def run_model(
 
         processed = pipeline.process()
 
+        processed = pipeline.process()
 
+        if problem_type == "classification":
+
+            if processed["target"] is None:
+                raise ValueError(
+                    "Target missing"
+                )
+
+            counts = pd.Series(
+                processed["target"]
+            ).value_counts()
+
+            if counts.min() < 2:
+                raise ValueError(
+                    "این Target برای Classification مناسب نیست چون بعضی کلاس‌ها نمونه کافی ندارند"
+                )
 
         result = execution_service.execute(
 
@@ -85,9 +97,7 @@ def run_model(
 
             processed["target"],
 
-            problem_type,
-
-            preferences
+            problem_type
 
         )
 

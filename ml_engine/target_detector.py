@@ -76,7 +76,7 @@ class TargetDetector:
                 )
 
             if info["semantic_type"] == "categorical":
-                score += 60
+                score += 20
 
                 reasons.append(
                     "Categorical target candidate"
@@ -111,20 +111,31 @@ class TargetDetector:
                 .nunique()
             )
 
-            if unique_count < 2:
+            if (
+                    self.dataframe[column].dtype != "object"
+                    and unique_count > 20
+            ):
                 continue
 
-            if unique_count > 20:
-                continue
+            score = 50
 
-            candidates.append(
-                {
-                    "column": column,
-                    "score": 50,
-                    "reason": [
-                        "Suitable number of classes"
-                    ]
-                }
-            )
+            if self.has_target_keyword(column):
+                score += 20
 
-        return candidates
+            candidates.append({
+
+                "column": column,
+
+                "score": score,
+
+                "reason": [
+                    "Manual target candidate"
+                ]
+
+            })
+
+        return sorted(
+            candidates,
+            key=lambda x: x["score"],
+            reverse=True
+        )

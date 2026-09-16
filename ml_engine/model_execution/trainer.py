@@ -9,6 +9,7 @@ from sklearn.svm import SVC
 from sklearn.neighbors import KNeighborsClassifier
 
 from ml_engine.model_execution.clustering_optimizer import ClusteringOptimizer
+from ml_engine.model_execution.dbscan_optimizer import DBSCANOptimizer
 
 
 class ModelTrainer:
@@ -16,6 +17,8 @@ class ModelTrainer:
     def __init__(self):
 
         self.cluster_optimizer = ClusteringOptimizer()
+
+        self.dbscan_optimizer = DBSCANOptimizer()
 
     def train(
             self,
@@ -58,6 +61,27 @@ class ModelTrainer:
                 random_state=42
             )
 
+        elif algorithm_name == "DBSCAN":
+
+            best_config = (
+                self.dbscan_optimizer
+                .find_best_config(X)
+            )
+
+            if best_config:
+
+                model = DBSCAN(
+                    eps=best_config["eps"],
+                    min_samples=best_config["min_samples"]
+                )
+
+
+            else:
+
+                model = DBSCAN(
+                    eps=0.5,
+                    min_samples=5
+                )
 
         else:
 

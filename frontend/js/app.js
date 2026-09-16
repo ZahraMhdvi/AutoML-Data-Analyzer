@@ -2,6 +2,7 @@ window.analysisData = null;
 window.selectedProblemType = null;
 window.selectedTarget = null;
 window.selectedPreferences = null;
+window.targetGenerationMode = null;
 const button = document.getElementById("analyzeBtn");
 
 
@@ -283,31 +284,25 @@ function showTargetSelection(){
 
 
 
-    if(possible.length > 0){
+    if(possible.length > 0 && recommended.length > 0){
+
+    html += `
+    <h3>
+        سایر گزینه‌های قابل بررسی
+    </h3>
+    `;
 
 
-        html += `
+    possible.forEach(target => {
 
-        <h3>
-            سایر گزینه‌های قابل بررسی
-        </h3>
+        html += createTargetCard(
+            target,
+            false
+        );
 
-        `;
+    });
 
-
-        possible.forEach(target => {
-
-
-            html += createTargetCard(
-                target,
-                false
-            );
-
-
-        });
-
-
-    }
+}
 
 
     if(analysisData.target_required){
@@ -488,16 +483,11 @@ function selectTarget(target){
     window.selectedTarget = target;
 
 
-    console.log(
-        "Selected target:",
-        selectedTarget
-    );
-
-
     showPreferences();
 
-
 }
+
+
 
 
 function submitTargetGenerationMode(){
@@ -556,15 +546,33 @@ function submitTargetGenerationMode(){
 
 function showManualTargetSelection(){
 
+
     const container =
         document.getElementById("result");
-    const targets =
-    analysisData.manual_targets || [];
 
-    console.log(
-    "MANUAL TARGETS:",
-    analysisData.manual_targets
-);
+
+    const targets =
+        analysisData.manual_targets || [];
+
+
+
+    if(targets.length === 0){
+
+
+        alert(
+            "برای این دیتاست Target مناسبی برای ورود دستی پیدا نشد. لطفاً یکی از گزینه‌های دیگر را انتخاب کنید."
+        );
+
+
+        window.targetGenerationMode = null;
+
+
+        return;
+
+    }
+
+
+
     container.innerHTML = `
 
     <h2>
@@ -574,21 +582,24 @@ function showManualTargetSelection(){
 
     <div class="card">
 
+
         <select id="manualTarget">
 
-                    ${
-                        targets
-                        .map(
-                        target =>
-                        `
-                        <option value="${target.column}">
+
+            ${
+                targets
+                .map(
+                    target =>
+                    `
+                    <option value="${target.column}">
                         ${target.column}
                         (score: ${target.score})
-                        </option>
-                        `
-                        )
-                        .join("")
+                    </option>
+                    `
+                )
+                .join("")
             }
+
 
         </select>
 
@@ -597,11 +608,14 @@ function showManualTargetSelection(){
 
 
         <button onclick="submitManualTarget()">
+
             ادامه
+
         </button>
 
 
     </div>
+
 
     `;
 

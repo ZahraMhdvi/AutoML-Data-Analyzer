@@ -130,3 +130,69 @@ def select_model(
             }
 
         )
+
+
+
+
+@router.post("/validate-target")
+def validate_target(
+    file: UploadFile = File(...),
+    target: str = Form(...)
+):
+
+    import tempfile
+    import pandas as pd
+
+
+    with tempfile.NamedTemporaryFile(
+        delete=False,
+        suffix=".xlsx"
+    ) as temp:
+
+        temp.write(
+            file.file.read()
+        )
+
+        path = temp.name
+
+
+    df = pd.read_excel(path)
+
+
+
+    if target not in df.columns:
+
+        return {
+            "success":False,
+            "error":"Target پیدا نشد"
+        }
+
+
+    classes = (
+        df[target]
+        .value_counts()
+    )
+
+
+    if len(classes) < 2:
+
+        return {
+            "success":False,
+            "error":
+            "Target باید حداقل دو کلاس داشته باشد"
+        }
+
+
+
+    if classes.min() < 2:
+
+        return {
+            "success":False,
+            "error":
+            "بعضی کلاس‌های این Target فقط یک نمونه دارند و برای Classification مناسب نیستند"
+        }
+
+
+    return {
+        "success":True
+    }
