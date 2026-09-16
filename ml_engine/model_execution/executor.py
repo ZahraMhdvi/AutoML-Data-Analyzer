@@ -14,8 +14,15 @@ class ModelExecutionService:
         self.splitter = DataSplitter()
         self.report_builder = ReportBuilder()
 
+    def execute(
+            self,
+            algorithm,
+            X,
+            y,
+            problem_type,
+            preferences=None
+    ):
 
-    def execute(self,algorithm,X,y,problem_type):
 
         if problem_type == "classification":
 
@@ -28,7 +35,14 @@ class ModelExecutionService:
 
         elif problem_type == "clustering":
 
-            model = self.trainer.train(algorithm,X)
+            model = self.trainer.train(
+                algorithm,
+                X,
+                cluster_count=
+                preferences.get("cluster_count")
+                if preferences
+                else None
+            )
             metrics = self.evaluator.evaluate(model,X,
                 None,
                 problem_type

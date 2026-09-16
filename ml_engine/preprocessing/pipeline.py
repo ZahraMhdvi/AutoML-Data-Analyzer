@@ -26,7 +26,16 @@ class PreprocessingPipeline:
 
 
         df = self.dataframe.copy()
+        identifier_columns = [
+            column
+            for column in df.columns
+            if "id" in column.lower()
+        ]
 
+        if identifier_columns:
+            df = df.drop(
+                columns=identifier_columns
+            )
 
         target_column = None
 
@@ -64,11 +73,17 @@ class PreprocessingPipeline:
             ).columns
 
         )
-        missing_handler = MissingHandler(df)
+        if self.problem_type == "classification":
 
-        df = missing_handler.fill_missing()
-        outlier_detector = OutlierDetector(df)
-        df = outlier_detector.remove_outliers()
+            missing_handler = MissingHandler(df)
+            df = missing_handler.fill_missing()
+            outlier_detector = OutlierDetector(df)
+            df = outlier_detector.remove_outliers()
+
+        else:
+
+            missing_handler = MissingHandler(df)
+            df = missing_handler.fill_missing()
 
         encoder = CategoricalEncoder(df)
 

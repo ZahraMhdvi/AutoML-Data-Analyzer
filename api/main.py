@@ -61,18 +61,28 @@ async def generate_target_from_clusters(
 
         generated_datasets[dataset_id] = df
 
-
         return {
             "success": True,
             "data": {
+
                 "dataset_id": dataset_id,
-                "target_column": "generated_target",
-                "classes": list(
-                    map(
-                        int,
-                        set(labels)
+
+                "target_column":
+                    "generated_target",
+
+                "problem_type":
+                    "classification",
+
+                "generated":
+                    True,
+
+                "classes":
+                    list(
+                        map(
+                            int,
+                            set(labels)
+                        )
                     )
-                )
             }
         }
 

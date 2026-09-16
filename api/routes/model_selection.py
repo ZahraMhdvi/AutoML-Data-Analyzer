@@ -65,6 +65,16 @@ def select_model(
 
         elif problem_type == "clustering":
             algorithms = CLUSTERING_ALGORITHMS
+            if preferences.get("cluster_count_known"):
+                algorithms = {
+
+                    name: config
+
+                    for name, config in algorithms.items()
+
+                    if name != "DBSCAN"
+
+                }
 
         else:
 

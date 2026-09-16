@@ -136,6 +136,7 @@ class ModelEvaluator:
         cluster_sizes = {
             str(label): int(count)
             for label, count in Counter(labels).items()
+            if label != -1
         }
 
         cluster_summary = []
@@ -216,10 +217,12 @@ class ModelEvaluator:
 
         if clusters > 1:
 
+            valid_indices = labels != -1
+
             result["silhouette_score"] = (
                 silhouette_score(
-                    X,
-                    labels
+                    X[valid_indices],
+                    labels[valid_indices]
                 )
             )
 

@@ -14,7 +14,14 @@ async function runModelSelection(){
         "file",
         file
     );
+    if(window.generatedDatasetId){
 
+    formData.append(
+        "generated_dataset_id",
+        window.generatedDatasetId
+    );
+
+}
 
     formData.append(
         "problem_type",
@@ -233,11 +240,6 @@ function selectAlgorithm(algorithm){
     window.selectedAlgorithm = algorithm;
 
 
-    console.log(
-        "Selected algorithm:",
-        selectedAlgorithm
-    );
-
 
     runSelectedModel();
 
@@ -265,6 +267,15 @@ async function runSelectedModel(){
     );
 
 
+    if(window.generatedDatasetId){
+
+    formData.append(
+        "generated_dataset_id",
+        window.generatedDatasetId
+    );
+
+}
+
 
     formData.append(
         "algorithm",
@@ -289,6 +300,13 @@ async function runSelectedModel(){
         window.selectedTarget
     );
 
+    formData.append(
+    "preferences",
+    JSON.stringify(
+        window.selectedPreferences
+    )
+);
+
 
 
     const response =
@@ -306,7 +324,10 @@ async function runSelectedModel(){
         await response.json();
 
 
-
+    console.log(
+    "RUN MODEL RESPONSE:",
+    result
+);
     showExecutionResult(result);
 
 }

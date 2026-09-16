@@ -77,10 +77,7 @@ class TargetDetector:
                     "Reasonable number of classes"
                 )
 
-
-            # فقط Targetهای با اطمینان بالا
-            if score >= 80:
-
+            if score > 0:
                 candidates.append(
                     {
                         "column": column,
@@ -88,7 +85,6 @@ class TargetDetector:
                         "reason": reasons
                     }
                 )
-
 
         return sorted(
             candidates,

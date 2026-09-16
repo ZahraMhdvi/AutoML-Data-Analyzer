@@ -17,15 +17,53 @@ class ModelTrainer:
 
         self.cluster_optimizer = ClusteringOptimizer()
 
-    def train(self,algorithm_name,X,y=None):
+    def train(
+            self,
+            algorithm_name,
+            X,
+            y=None,
+            cluster_count=None
+    ):
 
-        if algorithm_name == "KMeans" and y is None:
+        if (
+                algorithm_name == "KMeans"
+                and cluster_count
+        ):
+
+            model = KMeans(
+                n_clusters=cluster_count,
+                random_state=42
+            )
+
+
+        elif (
+                algorithm_name == "Agglomerative Clustering"
+                and cluster_count
+        ):
+
+            model = AgglomerativeClustering(
+                n_clusters=cluster_count
+            )
+
+
+        elif (
+                algorithm_name == "KMeans"
+                and y is None
+        ):
+
             best_config = self.cluster_optimizer.find_best_k(X)
-            model = KMeans(n_clusters=best_config["n_clusters"],random_state=42)
+
+            model = KMeans(
+                n_clusters=best_config["n_clusters"],
+                random_state=42
+            )
+
 
         else:
 
-            model = self._create_model(algorithm_name)
+            model = self._create_model(
+                algorithm_name
+            )
 
 
         if y is not None:
@@ -37,18 +75,23 @@ class ModelTrainer:
 
         return model
 
+    def _create_model(self, algorithm_name, X=None):
 
+        if algorithm_name == "KMeans":
+            best_config = self.cluster_optimizer.find_best_k(X)
 
-    def _create_model(self,algorithm_name):
+            return KMeans(
+                n_clusters=best_config["n_clusters"],
+                random_state=42
+            )
 
         models = {
+
             "Logistic Regression":
                 LogisticRegression(),
 
-
             "Decision Tree":
                 DecisionTreeClassifier(),
-
 
             "Random Forest":
                 RandomForestClassifier(),
@@ -62,28 +105,15 @@ class ModelTrainer:
             "KNN":
                 KNeighborsClassifier(),
 
-            "KMeans":
-                KMeans(
-                    n_clusters=3,
-                    random_state=42
-                ),
-
-
             "DBSCAN":
-                DBSCAN(),
-
+                DBSCAN(
+                    eps=0.8,
+                    min_samples=5
+                ),
 
             "Agglomerative Clustering":
                 AgglomerativeClustering()
 
         }
-
-
-        if algorithm_name not in models:
-
-            raise ValueError(
-                f"Unsupported algorithm {algorithm_name}"
-            )
-
 
         return models[algorithm_name]

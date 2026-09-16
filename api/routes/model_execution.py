@@ -25,13 +25,21 @@ def run_model(
 
         problem_type: str = Form(...),
 
-        target: str = Form("")
+        target: str = Form(""),
+
+        preferences: str = Form("{}")
 
 ):
+    import json
 
     try:
 
+        preferences = json.loads(preferences)
 
+        print(
+            "EXECUTION PREFS:",
+            preferences
+        )
         with tempfile.NamedTemporaryFile(
                 delete=False,
                 suffix=".xlsx"
@@ -77,7 +85,9 @@ def run_model(
 
             processed["target"],
 
-            problem_type
+            problem_type,
+
+            preferences
 
         )
 
