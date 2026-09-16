@@ -31,6 +31,14 @@ class DatasetAnalyzer:
 
         targets = target_detector.detect()
 
+        manual_targets = (
+            target_detector.detect_manual_targets()
+        )
+        print(
+            "MANUAL TARGETS IN ANALYZER:",
+            manual_targets
+        )
+
         eligibility = EligibilityChecker(
             dataframe,
             columns,
@@ -43,5 +51,7 @@ class DatasetAnalyzer:
             "profile": profile,
             "columns": columns,
             "targets": targets,
+            "manual_targets": manual_targets,
             "eligibility": result
+
         }

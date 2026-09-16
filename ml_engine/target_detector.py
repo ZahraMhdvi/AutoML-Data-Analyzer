@@ -68,13 +68,18 @@ class TargetDetector:
                     "Target keyword detected"
                 )
 
-
             if self.has_reasonable_classes(column):
-
                 score += 20
 
                 reasons.append(
                     "Reasonable number of classes"
+                )
+
+            if info["semantic_type"] == "categorical":
+                score += 60
+
+                reasons.append(
+                    "Categorical target candidate"
                 )
 
             if score > 0:
@@ -91,3 +96,35 @@ class TargetDetector:
             key=lambda x: x["score"],
             reverse=True
         )
+
+    def detect_manual_targets(self):
+
+        candidates = []
+
+        for column, info in self.column_analysis.items():
+
+            if info["semantic_type"] == "identifier":
+                continue
+
+            unique_count = (
+                self.dataframe[column]
+                .nunique()
+            )
+
+            if unique_count < 2:
+                continue
+
+            if unique_count > 20:
+                continue
+
+            candidates.append(
+                {
+                    "column": column,
+                    "score": 50,
+                    "reason": [
+                        "Suitable number of classes"
+                    ]
+                }
+            )
+
+        return candidates

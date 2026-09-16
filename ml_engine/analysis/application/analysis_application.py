@@ -25,12 +25,20 @@ class AnalysisApplication:
             for target in analysis_result["targets"]
             if target["score"] < 80
         ]
+        available_targets = (
+                recommended_targets
+                +
+                possible_targets
+        )
         return {
 
             "profile": analysis_result["profile"],
             "problem_recommendations": recommendations,
             "recommended_targets": recommended_targets,
             "possible_targets": possible_targets,
-            "target_required": len(recommended_targets) == 0
+            "target_required": len(recommended_targets) == 0,
+            "available_targets": available_targets,
+            "manual_targets":
+                analysis_result["manual_targets"],
 
         }

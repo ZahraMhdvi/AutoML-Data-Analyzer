@@ -538,9 +538,7 @@ function submitTargetGenerationMode(){
 
     if(mode === "manual"){
 
-        console.log(
-            "Manual target selected"
-        );
+    showManualTargetSelection();
 
     }
 
@@ -556,3 +554,83 @@ function submitTargetGenerationMode(){
 }
 
 
+function showManualTargetSelection(){
+
+    const container =
+        document.getElementById("result");
+    const targets =
+    analysisData.manual_targets || [];
+
+    console.log(
+    "MANUAL TARGETS:",
+    analysisData.manual_targets
+);
+    container.innerHTML = `
+
+    <h2>
+        انتخاب Target دستی
+    </h2>
+
+
+    <div class="card">
+
+        <select id="manualTarget">
+
+                    ${
+                        targets
+                        .map(
+                        target =>
+                        `
+                        <option value="${target.column}">
+                        ${target.column}
+                        (score: ${target.score})
+                        </option>
+                        `
+                        )
+                        .join("")
+            }
+
+        </select>
+
+
+        <br><br>
+
+
+        <button onclick="submitManualTarget()">
+            ادامه
+        </button>
+
+
+    </div>
+
+    `;
+
+}
+
+
+
+function submitManualTarget(){
+
+    const target =
+        document.getElementById(
+            "manualTarget"
+        ).value;
+
+
+    window.selectedTarget =
+        target;
+
+
+    window.selectedProblemType =
+        "classification";
+
+
+    console.log(
+        "MANUAL TARGET:",
+        target
+    );
+
+
+    showPreferences();
+
+}
