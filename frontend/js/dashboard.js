@@ -1,176 +1,103 @@
 let featureChartInstance = null;
-function renderMetricsChart(metrics){
 
 
-    const ctx =
-        document
-        .getElementById(
-            "metricsChart"
-        );
+const PINK_PALETTE = [
+    "#ec4899",
+    "#f472b6",
+    "#d946ef",
+    "#e879f9",
+    "#fb7185",
+    "#f9a8d4",
+    "#c084fc",
+    "#db2777"
+];
 
 
-    new Chart(
-        ctx,
-        {
+function convertToRGBA(hex, alpha){
 
-        type:"bar",
+    const r =
+        parseInt(hex.substring(1,3),16);
 
-        data:{
+    const g =
+        parseInt(hex.substring(3,5),16);
 
-            labels:[
-                "Accuracy",
-                "Precision",
-                "Recall",
-                "F1"
-            ],
+    const b =
+        parseInt(hex.substring(5,7),16);
 
 
-            datasets:[{
-
-                label:
-                "Score",
-
-
-                data:[
-                    metrics.accuracy * 100,
-                    metrics.precision * 100,
-                    metrics.recall * 100,
-                    metrics.f1 * 100
-                ]
-
-            }]
-
-        },
+    return `
+        rgba(
+            ${r},
+            ${g},
+            ${b},
+            ${alpha}
+        )
+    `;
+}
 
 
-        options:{
+const SCATTER_COLORS = [
+    "#ec4899",
+    "#8b5cf6",
+    "#06b6d4",
+    "#f97316",
+    "#22c55e",
+    "#e11d48",
+    "#14b8a6"
+];
 
-            scales:{
 
-                y:{
-                    beginAtZero:true,
-                    max:100
-                }
 
-            }
+function formatPercent(value){
 
-        }
+    if(
+        value === null ||
+        value === undefined
+    ){
+        return "-";
+    }
 
-    });
+
+    return (
+        value * 100
+    )
+    .toFixed(2)
+    + "%";
 
 }
 
+
+
+
 function renderDashboard(data){
+
+
+    setStep(
+        "results"
+    );
 
 
     if(
         data.report.problem_type === "clustering"
     ){
 
-        renderClusteringDashboard(data);
+        renderClusteringDashboard(
+            data
+        );
 
     }
+
     else{
 
-        renderClassificationDashboard(data);
+        renderClassificationDashboard(
+            data
+        );
 
     }
 
 }
 
-function renderClusteringDashboard(data){
 
-
-    const metrics = data.metrics;
-
-
-    document.getElementById("result")
-    .innerHTML = `
-
-
-    <h2>
-        داشبورد مدل ${data.algorithm}
-    </h2>
-
-
-    <div class="cards">
-
-
-        <div class="card">
-
-            <h3>
-            تعداد کلاسترها
-            </h3>
-
-            <h2>
-            ${metrics.cluster_count}
-            </h2>
-
-        </div>
-
-
-
-        <div class="card">
-
-            <h3>
-            Noise Points
-            </h3>
-
-            <h2>
-            ${metrics.noise_points}
-            </h2>
-
-        </div>
-
-
-
-        <div class="card">
-
-            <h3>
-            Silhouette Score
-            </h3>
-
-            <h2>
-            ${
-            metrics.silhouette_score
-            ?
-            (metrics.silhouette_score * 100).toFixed(2)+"%"
-            :
-            "-"
-            }
-            </h2>
-
-        </div>
-
-
-    </div>
-    <div class="card">
-    
-        <h3>
-        اندازه کلاسترها
-        </h3>
-    
-        <canvas id="clusterSizeChart"></canvas>
-    
-    </div>
-    <div class="card">
-
-    <h3>
-        نمایش کلاسترها
-    </h3>
-
-    <div style="height:500px">
-
-    <canvas id="clusterScatterChart"></canvas>
-
-    </div>
-
-    </div>
-
-    `;
-    renderClusterSizeChart(metrics.cluster_sizes);
-    renderClusterScatter(metrics.cluster_points);
-}
 
 function renderClassificationDashboard(data){
 
@@ -179,47 +106,73 @@ function renderClassificationDashboard(data){
         data.metrics;
 
 
-    document.getElementById("result")
+    document.getElementById(
+        "result"
+    )
     .innerHTML = `
 
 
     <h2>
-        داشبورد مدل ${data.algorithm}
+        نتیجه تحلیل مدل ${data.algorithm}
     </h2>
+
 
 
     <div class="cards">
 
 
         <div class="card">
-            <h3>Accuracy</h3>
+
+            <h3>
+                دقت کلی مدل
+            </h3>
+
             <h2>
-            ${(metrics.accuracy * 100).toFixed(2)}%
+                ${formatPercent(metrics.accuracy)}
             </h2>
+
         </div>
 
 
+
         <div class="card">
-            <h3>Precision</h3>
+
+            <h3>
+                دقت پیش‌بینی
+            </h3>
+
             <h2>
-            ${(metrics.precision * 100).toFixed(2)}%
+                ${formatPercent(metrics.precision)}
             </h2>
+
         </div>
 
 
+
         <div class="card">
-            <h3>Recall</h3>
+
+            <h3>
+                شناسایی موارد درست
+            </h3>
+
             <h2>
-            ${(metrics.recall * 100).toFixed(2)}%
+                ${formatPercent(metrics.recall)}
             </h2>
+
         </div>
 
 
+
         <div class="card">
-            <h3>F1</h3>
+
+            <h3>
+                تعادل عملکرد مدل
+            </h3>
+
             <h2>
-            ${(metrics.f1 * 100).toFixed(2)}%
+                ${formatPercent(metrics.f1)}
             </h2>
+
         </div>
 
 
@@ -227,11 +180,14 @@ function renderClassificationDashboard(data){
 
 
 
+
+
     <div class="card">
 
         <h3>
-            مقایسه معیارها
+            مقایسه عملکرد مدل
         </h3>
+
 
         <canvas id="metricsChart"></canvas>
 
@@ -239,65 +195,83 @@ function renderClassificationDashboard(data){
 
 
 
+
+
     <div class="card">
 
         <h3>
-            Confusion Matrix
+            مقایسه نتیجه واقعی و پیش‌بینی مدل
         </h3>
+
 
         <div id="confusionChart"></div>
 
     </div>
+
+
+
+
+
     <div id="featureImportanceContainer">
+
+
         <div class="card">
-    
-        <h3>
-            Feature Importance
-        </h3>
-    
-        <canvas 
-            id="featureChart"
-            style="height:400px">
-        </canvas>
-    
-    </div>
+
+            <h3>
+                میزان اثرگذاری ویژگی‌ها
+            </h3>
+
+
+            <canvas id="featureChart"></canvas>
+
+
+        </div>
+
 
     </div>
+
+
     `;
 
 
 
-    renderMetricsChart(metrics);
-    renderFeatureImportance(metrics.feature_importance);
+    renderMetricsChart(
+        metrics
+    );
+
+
+    renderFeatureImportance(
+        metrics.feature_importance
+    );
 
 
 
-    if(metrics.confusion_matrix){
+    if(
+        metrics.confusion_matrix &&
+        metrics.classes
+    ){
 
-                if(
-            metrics.confusion_matrix &&
+        renderConfusionMatrix(
+            metrics.confusion_matrix,
             metrics.classes
-        ){
-
-            renderConfusionMatrix(
-                metrics.confusion_matrix,
-                metrics.classes
-            );
-
-        }
+        );
 
     }
 
+
 }
 
-
-function renderConfusionMatrix(matrix, classes) {
+function renderConfusionMatrix(
+    matrix,
+    classes
+){
 
 
     const container =
         document.getElementById(
             "confusionChart"
         );
+
 
 
     let max =
@@ -309,45 +283,57 @@ function renderConfusionMatrix(matrix, classes) {
 
     let html = `
 
+
     <div class="heatmap-wrapper">
 
-        <table class="heatmap-table">
+
+    <table class="heatmap-table">
 
 
-            <tr>
+    <tr>
 
-                <th></th>
+        <th>
+            نتیجه واقعی / نتیجه مدل
+        </th>
 
-                ${
-                    classes.map(
-                        c =>
-                        `<th>${c}</th>`
-                    ).join("")
-                }
 
-            </tr>
+        ${
+            classes.map(
+                c =>
+                `<th>
+                    ${c}
+                </th>`
+            )
+            .join("")
+        }
+
+
+    </tr>
+
 
     `;
 
 
 
     matrix.forEach(
-        (row,i)=>{
+        (row,index)=>{
 
 
             html += `
 
             <tr>
 
-                <th>
-                    ${classes[i]}
-                </th>
+
+            <th>
+                ${classes[index]}
+            </th>
 
             `;
 
 
+
             row.forEach(
-                (value,j)=>{
+                (value,column)=>{
 
 
                     const opacity =
@@ -357,16 +343,33 @@ function renderConfusionMatrix(matrix, classes) {
                         );
 
 
+
                     const color =
-                        i === j
+
+                        index === column
+
                         ?
-                        `rgba(46,204,113,${opacity})`
+
+                        `rgba(
+                            236,
+                            72,
+                            153,
+                            ${opacity}
+                        )`
+
                         :
-                        `rgba(231,76,60,${opacity})`;
+
+                        `rgba(
+                            192,
+                            38,
+                            211,
+                            ${opacity}
+                        )`;
 
 
 
                     html += `
+
 
                     <td
                     style="
@@ -378,6 +381,7 @@ function renderConfusionMatrix(matrix, classes) {
 
                     </td>
 
+
                     `;
 
 
@@ -385,7 +389,12 @@ function renderConfusionMatrix(matrix, classes) {
             );
 
 
-            html += `</tr>`;
+
+            html += `
+
+            </tr>
+
+            `;
 
 
         }
@@ -395,14 +404,336 @@ function renderConfusionMatrix(matrix, classes) {
 
     html += `
 
-        </table>
+    </table>
 
     </div>
 
     `;
 
 
-    container.innerHTML = html;
+
+    container.innerHTML =
+        html;
+
+
+}
+
+
+
+
+function renderClusteringDashboard(data){
+
+
+    const metrics =
+        data.metrics;
+
+
+
+    document.getElementById(
+        "result"
+    )
+    .innerHTML = `
+
+
+
+    <h2>
+
+        نتیجه گروه‌بندی داده‌ها با مدل ${data.algorithm}
+
+    </h2>
+
+
+
+
+
+    <div class="cards">
+
+
+        <div class="card">
+
+
+            <h3>
+                تعداد گروه‌های پیدا شده
+            </h3>
+
+
+            <h2>
+                ${metrics.cluster_count}
+            </h2>
+
+
+        </div>
+
+
+
+
+
+        <div class="card">
+
+
+            <h3>
+                تعداد داده‌های غیرعادی
+            </h3>
+
+
+            <h2>
+                ${
+                    metrics.noise_points ??
+                    "-"
+                }
+            </h2>
+
+
+        </div>
+
+
+
+
+
+        <div class="card">
+
+
+            <h3>
+                کیفیت جدا شدن گروه‌ها
+            </h3>
+
+
+            <h2>
+
+            ${
+                metrics.silhouette_score !== null &&
+                metrics.silhouette_score !== undefined
+
+                ?
+
+                `
+                ${metrics.silhouette_score.toFixed(2)}
+                
+                <br>
+                
+                <small>
+                ${getSilhouetteText(metrics.silhouette_score)}
+                </small>
+                `
+
+                :
+
+                "-"
+
+            }
+
+
+            </h2>
+
+
+        </div>
+
+
+
+    </div>
+
+
+
+
+
+
+    <div class="card">
+
+
+        <h3>
+            تعداد اعضای هر گروه
+        </h3>
+
+
+        <canvas id="clusterSizeChart"></canvas>
+
+
+    </div>
+
+
+
+
+
+
+    <div class="card">
+
+
+        <h3>
+            پراکندگی داده‌ها در گروه‌ها
+        </h3>
+
+
+
+        <div
+        style="
+        height:520px
+        "
+        >
+
+        <canvas id="clusterScatterChart"></canvas>
+
+
+        </div>
+
+
+    </div>
+
+
+
+    `;
+
+
+
+    renderClusterSizeChart(
+        metrics.cluster_sizes
+    );
+
+
+
+    renderClusterScatter(
+        metrics.cluster_points
+    );
+
+
+}
+
+
+
+function renderMetricsChart(metrics){
+
+
+    const ctx =
+        document.getElementById(
+            "metricsChart"
+        );
+
+
+    new Chart(
+        ctx,
+        {
+
+            type:"bar",
+
+
+            data:{
+
+                labels:[
+
+                    "عملکرد کلی مدل",
+
+                    "دقت پیش‌بینی",
+
+                    "شناسایی موارد درست",
+
+                    "تعادل عملکرد"
+
+                ],
+
+
+                datasets:[{
+
+                    label:
+                    "درصد عملکرد",
+
+
+                    data:[
+
+                        metrics.accuracy * 100,
+
+                        metrics.precision * 100,
+
+                        metrics.recall * 100,
+
+                        metrics.f1 * 100
+
+                    ],
+
+
+                    backgroundColor:
+                    PINK_PALETTE.slice(0,4),
+
+
+                    borderRadius:10
+
+                }]
+
+
+            },
+
+
+            options:{
+
+
+                responsive:true,
+
+
+                plugins:{
+
+
+                    legend:{
+
+                        display:false
+
+                    }
+
+
+                },
+
+
+                scales:{
+
+
+                    y:{
+
+
+                        beginAtZero:true,
+
+
+                        max:100,
+
+
+                        title:{
+
+
+                            display:true,
+
+
+                            text:
+                            "درصد عملکرد"
+
+                        }
+
+
+                    },
+
+
+                    x:{
+
+
+                        ticks:{
+
+
+                            maxRotation:0,
+
+
+                            minRotation:0
+
+
+                        }
+
+                    }
+
+
+                }
+
+
+            }
+
+
+        }
+
+    );
+
 }
 
 
@@ -411,10 +742,12 @@ function renderConfusionMatrix(matrix, classes) {
 function renderFeatureImportance(features){
 
 
+
     const container =
         document.getElementById(
             "featureImportanceContainer"
         );
+
 
 
     if(
@@ -429,39 +762,35 @@ function renderFeatureImportance(features){
     }
 
 
-    container.innerHTML = `
-
-    <div class="card">
-
-        <h3>
-            Feature Importance
-        </h3>
-
-        <canvas id="featureChart"></canvas>
-
-    </div>
-
-    `;
-
-
 
     const sorted =
+
         features
+
         .filter(
-            x => x.feature !== "Customer_ID"
+            x =>
+            x.feature !== "Customer_ID"
         )
+
+
         .sort(
             (a,b)=>
             b.importance - a.importance
         )
+
+
         .slice(0,10);
 
 
 
+
     const values =
+
         sorted.map(
-            x => x.importance * 100
+            x =>
+            x.importance * 100
         );
+
 
 
 
@@ -469,9 +798,6 @@ function renderFeatureImportance(features){
         document.getElementById(
             "featureChart"
         );
-
-
-    ctx.height = 400;
 
 
 
@@ -482,57 +808,127 @@ function renderFeatureImportance(features){
     }
 
 
+
+
     featureChartInstance =
+
         new Chart(
+
             ctx,
+
             {
 
-            type:"bar",
-
-            data:{
-
-                labels:
-                    sorted.map(
-                        x=>x.feature
-                    ),
-
-                datasets:[{
-
-                    label:
-                    "Importance (%)",
-
-                    data:
-                    values
-
-                }]
-
-            },
+                type:"bar",
 
 
-            options:{
 
-                indexAxis:"y",
+                data:{
 
-                scales:{
 
-                    x:{
+                    labels:
 
-                        beginAtZero:true,
+                        sorted.map(
+                            x =>
+                            x.feature
+                        ),
 
-                        max:
-                        Math.max(...values)+5
+
+
+                    datasets:[{
+
+
+                        label:
+                        "میزان اثرگذاری",
+
+
+
+                        data:values,
+
+
+
+                        backgroundColor:
+
+                            PINK_PALETTE.slice(
+                                0,
+                                values.length
+                            ),
+
+
+
+                        borderRadius:10
+
+
+
+                    }]
+
+
+                },
+
+
+
+                options:{
+
+
+                    indexAxis:"y",
+
+
+                    responsive:true,
+
+
+
+                    plugins:{
+
+
+                        legend:{
+
+
+                            display:false
+
+
+                        }
+
+
+                    },
+
+
+
+                    scales:{
+
+
+                        x:{
+
+
+                            beginAtZero:true,
+
+
+                            title:{
+
+
+                                display:true,
+
+
+                                text:
+                                "درصد اثرگذاری"
+
+
+                            }
+
+
+                        }
+
 
                     }
 
+
                 }
+
+
 
             }
 
-        });
-
+        );
 
 }
-
 
 
 function renderClusterSizeChart(clusterSizes){
@@ -544,37 +940,154 @@ function renderClusterSizeChart(clusterSizes){
         );
 
 
+
+    if(!ctx || !clusterSizes)
+        return;
+
+
+
+    const labels =
+        Object.keys(
+            clusterSizes
+        );
+
+
+
+    const values =
+        Object.values(
+            clusterSizes
+        );
+
+
+
     new Chart(
+
         ctx,
+
         {
 
-        type:"bar",
 
-        data:{
-
-            labels:
-                Object.keys(clusterSizes),
+            type:"bar",
 
 
-            datasets:[{
 
-                label:
-                "Cluster Size",
+            data:{
 
 
-                data:
-                Object.values(clusterSizes)
+                labels:labels,
 
-            }]
+
+
+                datasets:[{
+
+
+                    label:
+                    "تعداد اعضای هر گروه",
+
+
+
+                    data:values,
+
+
+
+                    backgroundColor:
+                    PINK_PALETTE.slice(
+                        0,
+                        values.length
+                    ),
+
+
+
+                    borderRadius:10
+
+
+                }]
+
+
+            },
+
+
+
+            options:{
+
+
+                responsive:true,
+
+
+
+                plugins:{
+
+
+                    legend:{
+
+
+                        display:false
+
+
+                    }
+
+
+                },
+
+
+
+                scales:{
+
+
+                    y:{
+
+
+                        beginAtZero:true,
+
+
+                        title:{
+
+
+                            display:true,
+
+
+                            text:
+                            "تعداد داده‌ها"
+
+
+                        }
+
+
+                    },
+
+
+
+                    x:{
+
+
+                        title:{
+
+
+                            display:true,
+
+
+                            text:
+                            "گروه‌ها"
+
+
+                        }
+
+
+                    }
+
+
+                }
+
+
+            }
+
 
         }
 
-    });
+    );
 
 
 }
-
-
 
 function renderClusterScatter(points){
 
@@ -585,116 +1098,242 @@ function renderClusterScatter(points){
         );
 
 
+
+    if(!ctx || !points)
+        return;
+
+
+
+
     const clusters = {};
 
 
-    points.forEach(point => {
+
+    points.forEach(
+        point => {
 
 
-        if(!clusters[point.cluster]){
+            if(!clusters[point.cluster]){
 
-            clusters[point.cluster] = [];
+                clusters[point.cluster] = [];
+
+            }
+
+
+
+            clusters[point.cluster].push({
+
+                x:
+                point.x,
+
+
+                y:
+                point.y
+
+            });
+
 
         }
+    );
 
 
-        clusters[point.cluster].push({
-
-            x: point.x,
-
-            y: point.y
-
-        });
-
-
-    });
 
 
 
     const datasets =
+
+
         Object.keys(clusters)
-        .map(cluster => ({
+
+        .map(
+
+            (cluster,index)=>({
 
 
-            label:
-            "Cluster " + cluster,
+
+                label:
+
+                    cluster === "-1"
+
+                    ?
+
+                    "داده‌های غیرعادی"
+
+                    :
+
+                    "گروه " + cluster,
 
 
-            data:
-            clusters[cluster],
 
 
-            pointRadius:2
+                data:
+
+                    clusters[cluster],
 
 
-        }));
+
+
+
+                backgroundColor:
+
+                    convertToRGBA(
+                        SCATTER_COLORS[
+                            index %
+                            SCATTER_COLORS.length
+                        ],
+                        0.45
+                    ),
+
+
+
+
+
+                pointRadius:4,
+
+
+
+                pointHoverRadius:7
+
+
+
+            })
+
+        );
+
+
+
+
 
 
 
     new Chart(
+
         ctx,
+
         {
 
-        type:"scatter",
 
-        data:{
-
-            datasets:datasets
-
-        },
+            type:"scatter",
 
 
-        options:{
+
+            data:{
 
 
-    maintainAspectRatio:false,
+                datasets:
+                datasets
 
 
-    plugins:{
+            },
 
-        legend:{
 
-            position:"bottom",
 
-            labels:{
+            options:{
 
-                boxWidth:15,
 
-                padding:15
+                maintainAspectRatio:false,
+
+
+
+                plugins:{
+
+
+                    legend:{
+
+
+                        position:
+                        "bottom",
+
+
+                        labels:{
+
+
+                            padding:15,
+
+
+                            boxWidth:15
+
+
+                        }
+
+
+                    }
+
+
+                },
+
+
+
+                scales:{
+
+
+
+                    x:{
+
+
+                        title:{
+
+
+                            display:true,
+
+
+                            text:
+                            "ویژگی تحلیلی اول"
+
+
+                        }
+
+
+                    },
+
+
+
+                    y:{
+
+
+                        title:{
+
+
+                            display:true,
+
+
+                            text:
+                            "ویژگی تحلیلی دوم"
+
+
+                        }
+
+
+                    }
+
+
+                }
+
 
             }
+
 
         }
 
-    },
-
-
-    scales:{
-
-        x:{
-
-            title:{
-                display:true,
-                text:"PCA 1"
-            }
-
-        },
-
-
-        y:{
-
-            title:{
-                display:true,
-                text:"PCA 2"
-            }
-
-        }
-
-    }
+    );
 
 }
 
-    });
 
+function getSilhouetteText(score){
+
+    if(score >= 0.7)
+        return "گروه‌بندی بسیار مناسب";
+
+    if(score >= 0.5)
+        return "گروه‌بندی مناسب";
+
+    if(score >= 0.25)
+        return "گروه‌بندی قابل قبول";
+
+    if(score >= 0)
+        return "تفکیک گروه‌ها ضعیف است";
+
+    return "گروه‌ها به خوبی جدا نشده‌اند";
 
 }
