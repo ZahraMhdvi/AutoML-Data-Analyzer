@@ -2,6 +2,7 @@ window.analysisData = null;
 window.selectedProblemType = null;
 window.selectedTarget = null;
 window.selectedPreferences = null;
+window.targetGenerationMode = null;
 const button = document.getElementById("analyzeBtn");
 
 
@@ -20,7 +21,7 @@ button.addEventListener(
 
         if (!file) {
 
-            alert("فایل انتخاب کنید");
+            showToast("فایل انتخاب کنید", "error");
 
             return;
         }
@@ -36,19 +37,34 @@ button.addEventListener(
         );
 
 
-        const response =
-            await fetch(
-                "http://127.0.0.1:8000/analyze-dataset",
-                {
-                    method: "POST",
-                    body: formData
-                }
-            );
+        showLoading("در حال تحلیل دیتاست...");
 
+        let result;
 
-        const result =
-            await response.json();
-            analysisData = result.data;
+        try {
+
+            const response =
+                await fetch(
+                    "http://127.0.0.1:8000/analyze-dataset",
+                    {
+                        method: "POST",
+                        body: formData
+                    }
+                );
+
+            result = await response.json();
+
+        } catch (err) {
+
+            hideLoading();
+            showToast("ارتباط با سرور برقرار نشد", "error");
+            return;
+
+        }
+
+        hideLoading();
+
+        window.analysisData = result.data;
 
 
 
@@ -65,6 +81,7 @@ button.addEventListener(
         }
 
 
+        setStep("problem");
         renderAnalysis(result.data);
 
     }
@@ -206,28 +223,28 @@ function createProblemCard(problem) {
 
 function selectProblem(type) {
 
-
     window.selectedProblemType = type;
 
-
-    console.log(
-        "Selected:",
-        selectedProblemType
-    );
-
+    setProblemSteps(type);
 
     if(type === "classification") {
 
+        updateStepper("classification");
+
+        setStep("target");
         showTargetSelection();
 
-    }
+}
 
 
     if(type === "clustering") {
 
+        updateStepper("clustering");
+
+        setStep("preferences");
         showClusteringPreferences();
 
-    }
+}
 
 }
 
@@ -239,7 +256,7 @@ function showTargetSelection(){
 
 
     const recommended =
-        analysisData.recommended_targets || [];
+        window.analysisData.recommended_targets || [];
 
 
     const possible =
@@ -289,67 +306,96 @@ function showTargetSelection(){
 
 
 
-    if(possible.length > 0){
+    if(possible.length > 0 && recommended.length > 0){
+
+    html += `
+    <h3>
+        سایر گزینه‌های قابل بررسی
+    </h3>
+    `;
 
 
-        html += `
+    possible.forEach(target => {
 
-        <h3>
-            سایر گزینه‌های قابل بررسی
-        </h3>
+        html += createTargetCard(
+            target,
+            false
+        );
 
-        `;
+    });
 
-
-        possible.forEach(target => {
-
-
-            html += createTargetCard(
-                target,
-                false
-            );
+}
 
 
-        });
+    if(analysisData.target_required){
 
+            html += `
+        
+            <div class="card">
+        
+                <h3>
+                    نتیجه مشخصی پیدا نشد
+                </h3>
+        
+        
+                <p>
+                    برای انجام Classification باید Target ساخته شود.
+                </p>
+        
+        
+                <label>
 
-    }
+                <input
+                type="radio"
+                name="target_generation"
+                value="manual">
+                
+                انتخاب دستی نتیجه
+                
+                </label>
+                
+                
+                
+                <label>
+                
+                <input
+                type="radio"
+                name="target_generation"
+                value="clustering">
+                
+                پیدا کردن گروه‌های مشابه توسط سیستم
+                
+                </label>
+                
+                
+                
+                <label>
+                
+                <input
+                type="radio"
+                name="target_generation"
+                value="ai">
+                
+                ساخت نتیجه پیشنهادی هوشمند
+                
+                </label>
+        
+        
+                <br><br>
+        
+        
+                <button onclick="submitTargetGenerationMode()">
+        
+                    ادامه
+        
+                </button>
+        
+        
+            </div>
+        
+            `;
 
-
-
-    if(
-        analysisData.target_required
-    ){
-
-        html += `
-
-        <div class="card">
-
-            <h3>
-                نتیجه مشخصی پیدا نشد
-            </h3>
-
-
-            <p>
-                می‌توانید خودتان نتیجه تعریف کنید
-                یا اجازه دهید سیستم پیشنهاد دهد.
-            </p>
-
-
-            <button>
-                تعریف دستی نتیجه
-            </button>
-
-
-            <button>
-                پیشنهاد سیستم
-            </button>
-
-        </div>
-
-        `;
-
-    }
+            }
 
 
     container.innerHTML = html;
@@ -455,15 +501,331 @@ function selectTarget(target){
     window.selectedTarget = target;
 
 
-    console.log(
-        "Selected target:",
-        selectedTarget
-    );
-
+    setStep("preferences");
 
     showPreferences();
+
+}
+
+
+
+
+function submitTargetGenerationMode(){
+
+
+    const mode =
+        document.querySelector(
+            'input[name="target_generation"]:checked'
+        )?.value;
+
+
+
+    if(!mode){
+
+        showToast(
+            "یک روش انتخاب کنید",
+            "error"
+        );
+
+        return;
+
+    }
+
+
+
+    window.targetGenerationMode = mode;
+    window.labelGenerationMode =
+    mode === "clustering";
+
+    if(mode === "clustering"){
+
+    window.labelGenerationMode = true;
+
+    window.selectedProblemType = "clustering";
+
+    setStep("preferences");
+    showClusteringPreferences();
+
+    }
+
+    if(mode === "manual"){
+
+    showManualTargetSelection();
+
+    }
+
+
+    if(mode === "ai"){
+
+    generateAITarget();
+
+}
 
 
 }
 
 
+
+
+
+async function generateAITarget(){
+
+
+        const formData =
+            new FormData();
+
+
+        const file =
+            document.getElementById(
+                "datasetFile"
+            ).files[0];
+
+
+        formData.append(
+            "file",
+            file
+        );
+
+
+        showLoading("هوش مصنوعی در حال ساخت Target است...");
+
+        let result;
+
+        try {
+
+            const response =
+                await fetch(
+                    "http://127.0.0.1:8000/generate-target-with-ai",
+                    {
+                        method:"POST",
+                        body:formData
+                    }
+                );
+
+            result = await response.json();
+
+        } catch (err) {
+
+            hideLoading();
+            showToast("ارتباط با سرور برقرار نشد", "error");
+            return;
+
+        }
+
+        hideLoading();
+
+
+        if(!result.success){
+
+        document.getElementById("result").innerHTML =
+
+        `
+        <div class="error">
+
+            ${result.error.message || result.error}
+
+        </div>
+        `;
+
+        return;
+
+    }
+
+
+
+    const target =
+        result.data.target_column
+    window.aiGeneratedDatasetId =
+        result.data.dataset_id;
+    window.generatedDatasetId =
+        result.data.dataset_id;
+
+
+    const container =
+        document.getElementById("result");
+
+
+    container.innerHTML = `
+    
+    
+    <div class="card">
+    
+    
+        <h2>
+            پیشنهاد هوشمند AI
+        </h2>
+    
+    
+        <h3>
+            Target پیشنهادی:
+        </h3>
+    
+    
+        <p>
+    
+            <b>
+            ${target}
+            </b>
+    
+        </p>
+    
+    
+    
+        <h4>
+            دلیل پیشنهاد:
+        </h4>
+    
+    
+        <p>
+
+            ${result.data.reason}
+
+        </p>
+
+
+        <h4>
+            ویژگی‌های استفاده‌شده:
+        </h4>
+
+        <p>
+            ${(result.data.important_features || []).join("، ")}
+        </p>
+
+
+
+        <button onclick="acceptAITarget('${target}')">
+    
+            تایید و ادامه
+    
+        </button>
+    
+    
+    
+    </div>
+    
+    
+    `;
+
+
+}
+
+
+function showManualTargetSelection(){
+
+
+    const container =
+        document.getElementById("result");
+
+
+    const targets =
+        analysisData.manual_targets || [];
+
+
+
+    if(targets.length === 0){
+
+
+        showToast(
+            "برای این دیتاست Target مناسبی برای ورود دستی پیدا نشد. لطفاً یکی از گزینه‌های دیگر را انتخاب کنید.",
+            "error"
+        );
+
+
+        window.targetGenerationMode = null;
+
+
+        return;
+
+    }
+
+
+
+    container.innerHTML = `
+
+    <h2>
+        انتخاب Target دستی
+    </h2>
+
+
+    <div class="card">
+
+
+        <select id="manualTarget">
+
+
+            ${
+                targets
+                .map(
+                    target =>
+                    `
+                    <option value="${target.column}">
+                        ${target.column}
+                        (score: ${target.score})
+                    </option>
+                    `
+                )
+                .join("")
+            }
+
+
+        </select>
+
+
+        <br><br>
+
+
+        <button onclick="submitManualTarget()">
+
+            ادامه
+
+        </button>
+
+
+    </div>
+
+
+    `;
+
+}
+
+
+
+function submitManualTarget(){
+
+    const target =
+        document.getElementById(
+            "manualTarget"
+        ).value;
+
+
+    window.selectedTarget =
+        target;
+
+
+    window.selectedProblemType =
+        "classification";
+
+    setStep("preferences");
+
+
+    showPreferences();
+
+}
+
+
+
+function acceptAITarget(target){
+
+
+    window.selectedTarget =
+    "generated_target";
+
+
+    window.selectedProblemType =
+        "classification";
+
+    setStep("preferences");
+
+    showPreferences();
+
+}

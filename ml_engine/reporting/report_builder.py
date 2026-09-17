@@ -67,7 +67,11 @@ class ReportBuilder:
                         "confusion_matrix",
 
                     "title":
-                        "Confusion Matrix"
+                        "Confusion Matrix",
+                    "data":
+                        metrics.get(
+                            "confusion_matrix"
+                        )
 
                 }
 
@@ -93,10 +97,7 @@ class ReportBuilder:
 
             "summary": {
 
-                "clusters":
-                    metrics.get(
-                        "number_of_clusters"
-                    )
+                "clusters": metrics.get("cluster_count")
 
             },
 

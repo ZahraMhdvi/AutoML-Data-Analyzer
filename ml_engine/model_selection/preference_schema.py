@@ -4,7 +4,7 @@ from typing import Optional
 
 @dataclass
 class UserPreferences:
-
+    cluster_count: int | None = None
     problem_type: Optional[str] = None
     
     main_goal: Optional[str] = None

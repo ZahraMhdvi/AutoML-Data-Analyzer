@@ -14,7 +14,14 @@ async function runModelSelection(){
         "file",
         file
     );
+    if(window.generatedDatasetId){
 
+    formData.append(
+        "generated_dataset_id",
+        window.generatedDatasetId
+    );
+
+}
 
     formData.append(
         "problem_type",
@@ -29,28 +36,39 @@ async function runModelSelection(){
     : window.selectedTarget
     );
 
-    console.log(
-        "SENDING PREFERENCES",
-        window.selectedPreferences
-    );
+
     formData.append(
     "preferences",
     JSON.stringify(window.selectedPreferences)
     );
 
 
-    const response =
-        await fetch(
-            "http://127.0.0.1:8000/model-selection",
-            {
-                method:"POST",
-                body:formData
-            }
-        );
+    showLoading("در حال یافتن بهترین مدل‌ها...");
 
+    let result;
 
-    const result =
-        await response.json();
+    try {
+
+        const response =
+            await fetch(
+                "http://127.0.0.1:8000/model-selection",
+                {
+                    method:"POST",
+                    body:formData
+                }
+            );
+
+        result = await response.json();
+
+    } catch (err) {
+
+        hideLoading();
+        showToast("ارتباط با سرور برقرار نشد", "error");
+        return;
+
+    }
+
+    hideLoading();
 
 
 
@@ -233,11 +251,7 @@ function selectAlgorithm(algorithm){
     window.selectedAlgorithm = algorithm;
 
 
-    console.log(
-        "Selected algorithm:",
-        selectedAlgorithm
-    );
-
+    setStep("results");
 
     runSelectedModel();
 
@@ -265,6 +279,15 @@ async function runSelectedModel(){
     );
 
 
+    if(window.generatedDatasetId){
+
+    formData.append(
+        "generated_dataset_id",
+        window.generatedDatasetId
+    );
+
+}
+
 
     formData.append(
         "algorithm",
@@ -289,21 +312,53 @@ async function runSelectedModel(){
         window.selectedTarget
     );
 
+   if(window.generatedDatasetId){
 
 
-    const response =
-    await fetch(
-        "http://127.0.0.1:8000/run-model",
-        {
-            method:"POST",
-            body:formData
-        }
-    );
+    window.selectedPreferences.generated_dataset_id =
+        window.generatedDatasetId;
 
 
 
-    const result =
-        await response.json();
+
+}
+
+
+formData.append(
+    "preferences",
+    JSON.stringify(
+        window.selectedPreferences
+    )
+);
+
+
+
+    showLoading("در حال آموزش مدل...");
+
+    let result;
+
+    try {
+
+        const response =
+            await fetch(
+                "http://127.0.0.1:8000/run-model",
+                {
+                    method:"POST",
+                    body:formData
+                }
+            );
+
+        result = await response.json();
+
+    } catch (err) {
+
+        hideLoading();
+        showToast("ارتباط با سرور برقرار نشد", "error");
+        return;
+
+    }
+
+    hideLoading();
 
 
 

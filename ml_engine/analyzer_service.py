@@ -16,20 +16,34 @@ class DatasetAnalyzer:
 
 
 
+    def analyze_dataframe(self, dataframe):
 
-    def analyze(self, file_path):
 
-        dataframe = self.loader.load_excel(file_path)
         profiler = DatasetProfiler(dataframe)
 
+
         profile = profiler.generate_report()
+
+
         column_analyzer = ColumnAnalyzer(dataframe)
+
 
         columns = column_analyzer.analyze()
 
-        target_detector = TargetDetector(dataframe,columns)
+
+        target_detector = TargetDetector(
+            dataframe,
+            columns
+        )
+
 
         targets = target_detector.detect()
+
+
+        manual_targets = (
+            target_detector.detect_manual_targets()
+        )
+
 
         eligibility = EligibilityChecker(
             dataframe,
@@ -37,11 +51,35 @@ class DatasetAnalyzer:
             targets
         )
 
+
         result = eligibility.evaluate()
+
+
         return {
+
             "dataframe": dataframe,
+
             "profile": profile,
+
             "columns": columns,
+
             "targets": targets,
+
+            "manual_targets": manual_targets,
+
             "eligibility": result
+
         }
+
+
+
+    def analyze(self, file_path):
+
+        dataframe = self.loader.load_excel(
+            file_path
+        )
+
+
+        return self.analyze_dataframe(
+            dataframe
+        )

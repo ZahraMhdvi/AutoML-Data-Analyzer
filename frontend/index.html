@@ -4,10 +4,15 @@
 <head>
 
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
 
     <title>
         AutoML Data Analyzer
     </title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
     <link rel="stylesheet" href="CSS/style.css">
 
@@ -16,30 +21,62 @@
 
 <body>
 
-
-<div class="container">
-
-    <h1>
-        تحلیل هوشمند داده
-    </h1>
-
-
-    <input
-        type="file"
-        id="datasetFile"
-        accept=".xlsx"
-    >
-
-
-    <button id="analyzeBtn">
-        تحلیل دیتاست
-    </button>
-
-
-    <div id="result"></div>
-
-
+<header class="app-header">
+    <div class="app-header__inner">
+        <div class="brand">
+            <div class="brand__icon">
+    <img src="assets/img.png" alt="AI">
 </div>
+            <div class="brand__text">
+                <h1>تحلیل هوشمند داده</h1>
+                <p>AutoML Data Analyzer</p>
+            </div>
+        </div>
+    </div>
+</header>
+
+<main class="container">
+
+    <ol class="stepper" id="stepper">
+        <li class="step" data-step="upload"><span class="step__dot">۱</span><span class="step__label">بارگذاری</span></li>
+        <li class="step" data-step="problem"><span class="step__dot">۲</span><span class="step__label">نوع مسئله</span></li>
+        <li class="step" data-step="target"><span class="step__dot">۳</span><span class="step__label">Target</span></li>
+        <li class="step" data-step="preferences"><span class="step__dot">۴</span><span class="step__label">تنظیمات</span></li>
+        <li class="step" data-step="model"><span class="step__dot">۵</span><span class="step__label">مدل</span></li>
+        <li class="step" data-step="results"><span class="step__dot">۶</span><span class="step__label">نتایج</span></li>
+    </ol>
+
+    <section class="panel" id="uploadPanel">
+
+        <h2 class="panel__title">دیتاست خود را بارگذاری کنید</h2>
+        <p class="panel__subtitle">فایل اکسل (xlsx.) دیتاست را انتخاب یا رها کنید تا تحلیل اولیه انجام شود.</p>
+
+        <div class="dropzone" id="dropzone">
+            <div class="dropzone__icon">⇪</div>
+            <p class="dropzone__text">فایل را اینجا رها کنید یا کلیک کنید</p>
+            <p class="dropzone__filename" id="fileNameLabel"></p>
+            <input type="file" id="datasetFile" accept=".xlsx" hidden>
+        </div>
+
+        <button id="analyzeBtn" class="btn btn--primary btn--block">
+            تحلیل دیتاست
+        </button>
+
+    </section>
+
+    <div id="result" class="result"></div>
+
+</main>
+
+<div class="loading-overlay" id="loadingOverlay">
+    <div class="spinner"></div>
+    <p class="loading-overlay__text" id="loadingText">در حال پردازش...</p>
+</div>
+
+<div class="toast-container" id="toastContainer"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="js/ui.js"></script>
 <script src="js/dashboard.js"></script>
 <script src="js/explanation.js"></script>
 <script src="js/preferences.js"></script>

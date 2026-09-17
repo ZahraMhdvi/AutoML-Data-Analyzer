@@ -85,7 +85,19 @@ function showClusteringPreferences(){
             بله، خودم مشخص می‌کنم
 
         </label>
-
+            <div id="clusterCountInput" style="display:none">
+    
+        <label>
+            تعداد کلاستر:
+        </label>
+    
+        <input
+        type="number"
+        id="clusterCount"
+        min="2"
+        placeholder="مثلا 3">
+    
+    </div>
 
     </div>
 
@@ -99,6 +111,51 @@ function showClusteringPreferences(){
 
 
     `;
+    document
+.querySelectorAll(
+    'input[name="cluster_number"]'
+)
+.forEach(
+    radio => {
+
+        radio.addEventListener(
+            "change",
+            ()=>{
+
+
+                const box =
+                document.getElementById(
+                    "clusterCountInput"
+                );
+
+
+                if(
+                    radio.value === "known"
+                    &&
+                    radio.checked
+                ){
+
+                    box.style.display =
+                    "block";
+
+                }
+
+                else if(
+                    radio.value === "unknown"
+                    &&
+                    radio.checked
+                ){
+
+                    box.style.display =
+                    "none";
+
+                }
+
+            }
+        );
+
+    }
+);
 
 }
 
@@ -106,7 +163,10 @@ function showClusteringPreferences(){
 
 function submitClusteringPreferences(){
 
-
+    const clusterCount =
+    document.getElementById(
+        "clusterCount"
+    )?.value;
     const clusterNumber =
         document.querySelector(
             'input[name="cluster_number"]:checked'
@@ -122,22 +182,30 @@ function submitClusteringPreferences(){
 
     const preferences = {
 
-
-        cluster_count_known:
-            clusterNumber === "known",
-
-
-        cluster_shape:
-            clusterGoal === "pattern_discovery"
-            ? "irregular"
-            : "unknown",
+    cluster_count_known:
+        clusterNumber === "known",
 
 
-        hierarchical_analysis:
-            clusterGoal === "customer_segmentation"
+    cluster_count:
+        clusterNumber === "known"
+        ?
+        Number(clusterCount)
+        :
+        null,
 
 
-    };
+    cluster_shape:
+        clusterGoal === "pattern_discovery"
+        ?
+        "irregular"
+        :
+        "unknown",
+
+
+    hierarchical_analysis:
+        clusterGoal === "customer_segmentation"
+
+};
 
 
     window.selectedPreferences = preferences;
@@ -145,17 +213,32 @@ function submitClusteringPreferences(){
 
     window.selectedProblemType = "clustering";
 
-
     window.selectedTarget = "";
 
+    setStep("model");
+
+    runModelSelection();
 
 
-    console.log(
-        "CLUSTER PREF",
-        preferences
-    );
 
 
+
+}
+
+
+
+function continueWithClustering(){
+
+
+    window.selectedProblemType =
+        "clustering";
+
+
+    window.selectedTarget =
+        "";
+
+
+    setStep("model");
 
     runModelSelection();
 
