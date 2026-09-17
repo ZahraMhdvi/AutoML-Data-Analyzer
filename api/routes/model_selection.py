@@ -30,7 +30,9 @@ def select_model(
 
         target: str = Form(""),
 
-        preferences: str = Form(...)
+        preferences: str = Form(...),
+
+        generated_dataset_id: str = Form("")
 
 ):
 
@@ -80,13 +82,13 @@ def select_model(
 
             raise ValueError("Unsupported problem type")
 
-
         response = application.run(
             dataset_path,
             problem_type,
             target,
             preferences,
-            algorithms
+            algorithms,
+            generated_dataset_id
         )
 
 

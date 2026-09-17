@@ -19,15 +19,52 @@ class ModelSelectionApplication:
         self.preference_service = (PreferenceService())
         self.preference_normalizer = (PreferenceNormalizer())
 
+    def run(
+            self,
+            file_path,
+            problem_type,
+            target,
+            user_preferences,
+            algorithms,
+            generated_dataset_id=None
+    ):
 
-    def run(self,file_path,problem_type,target,user_preferences,algorithms):
+        if generated_dataset_id:
 
-        analysis_result = (self.analyzer.analyze(file_path))
+            from api.routes.ai_target import generated_datasets
+
+            if generated_dataset_id not in generated_datasets:
+                raise ValueError(
+                    "Generated dataset not found"
+                )
+
+            dataframe = generated_datasets[
+                generated_dataset_id
+            ]
+
+            analysis_result = (
+                self.analyzer.analyze_dataframe(
+                    dataframe
+                )
+            )
+
+
+        else:
+
+            analysis_result = (
+                self.analyzer.analyze(
+                    file_path
+                )
+            )
+
+
         processed = (PreprocessingPipeline(analysis_result["dataframe"],problem_type,target).process())
 
         if isinstance(user_preferences, dict):
             user_preferences = UserPreferences(
-
+                cluster_count=user_preferences.get(
+                    "cluster_count"
+                ),
                 problem_type=problem_type,
 
                 main_goal=user_preferences.get(
