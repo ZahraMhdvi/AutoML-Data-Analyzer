@@ -204,7 +204,8 @@ function submitPreferences(){
 
 
 
-    selectedPreferences = preferences;
+    window.selectedPreferences = preferences;
+    setStep("model");
     runModelSelection();
 
 

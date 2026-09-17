@@ -43,18 +43,32 @@ async function runModelSelection(){
     );
 
 
-    const response =
-        await fetch(
-            "http://127.0.0.1:8000/model-selection",
-            {
-                method:"POST",
-                body:formData
-            }
-        );
+    showLoading("در حال یافتن بهترین مدل‌ها...");
 
+    let result;
 
-    const result =
-        await response.json();
+    try {
+
+        const response =
+            await fetch(
+                "http://127.0.0.1:8000/model-selection",
+                {
+                    method:"POST",
+                    body:formData
+                }
+            );
+
+        result = await response.json();
+
+    } catch (err) {
+
+        hideLoading();
+        showToast("ارتباط با سرور برقرار نشد", "error");
+        return;
+
+    }
+
+    hideLoading();
 
 
 
@@ -237,6 +251,7 @@ function selectAlgorithm(algorithm){
     window.selectedAlgorithm = algorithm;
 
 
+    setStep("results");
 
     runSelectedModel();
 
@@ -318,19 +333,32 @@ formData.append(
 
 
 
-    const response =
-    await fetch(
-        "http://127.0.0.1:8000/run-model",
-        {
-            method:"POST",
-            body:formData
-        }
-    );
+    showLoading("در حال آموزش مدل...");
 
+    let result;
 
+    try {
 
-    const result =
-        await response.json();
+        const response =
+            await fetch(
+                "http://127.0.0.1:8000/run-model",
+                {
+                    method:"POST",
+                    body:formData
+                }
+            );
+
+        result = await response.json();
+
+    } catch (err) {
+
+        hideLoading();
+        showToast("ارتباط با سرور برقرار نشد", "error");
+        return;
+
+    }
+
+    hideLoading();
 
 
 

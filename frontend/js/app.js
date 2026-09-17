@@ -21,7 +21,7 @@ button.addEventListener(
 
         if (!file) {
 
-            alert("فایل انتخاب کنید");
+            showToast("فایل انتخاب کنید", "error");
 
             return;
         }
@@ -37,19 +37,34 @@ button.addEventListener(
         );
 
 
-        const response =
-            await fetch(
-                "http://127.0.0.1:8000/analyze-dataset",
-                {
-                    method: "POST",
-                    body: formData
-                }
-            );
+        showLoading("در حال تحلیل دیتاست...");
 
+        let result;
 
-        const result =
-            await response.json();
-            window.analysisData = result.data;
+        try {
+
+            const response =
+                await fetch(
+                    "http://127.0.0.1:8000/analyze-dataset",
+                    {
+                        method: "POST",
+                        body: formData
+                    }
+                );
+
+            result = await response.json();
+
+        } catch (err) {
+
+            hideLoading();
+            showToast("ارتباط با سرور برقرار نشد", "error");
+            return;
+
+        }
+
+        hideLoading();
+
+        window.analysisData = result.data;
 
 
 
@@ -66,6 +81,7 @@ button.addEventListener(
         }
 
 
+        setStep("problem");
         renderAnalysis(result.data);
 
     }
@@ -209,20 +225,26 @@ function selectProblem(type) {
 
     window.selectedProblemType = type;
 
-
+    setProblemSteps(type);
 
     if(type === "classification") {
 
+        updateStepper("classification");
+
+        setStep("target");
         showTargetSelection();
 
-    }
+}
 
 
     if(type === "clustering") {
 
+        updateStepper("clustering");
+
+        setStep("preferences");
         showClusteringPreferences();
 
-    }
+}
 
 }
 
@@ -234,7 +256,7 @@ function showTargetSelection(){
 
 
     const recommended =
-        analysisData.recommended_targets || [];
+        window.analysisData.recommended_targets || [];
 
 
     const possible =
@@ -322,44 +344,40 @@ function showTargetSelection(){
         
         
                 <label>
-        
-                    <input
-                    type="radio"
-                    name="target_generation"
-                    value="manual">
-        
-                    خودم Target را وارد می‌کنم
-        
+
+                <input
+                type="radio"
+                name="target_generation"
+                value="manual">
+                
+                انتخاب دستی نتیجه
+                
                 </label>
-        
-        
-                <br>
-        
-        
+                
+                
+                
                 <label>
-        
-                    <input
-                    type="radio"
-                    name="target_generation"
-                    value="clustering">
-        
-                    سیستم با Clustering گروه‌بندی کند
-        
+                
+                <input
+                type="radio"
+                name="target_generation"
+                value="clustering">
+                
+                پیدا کردن گروه‌های مشابه توسط سیستم
+                
                 </label>
-        
-        
-                <br>
-        
-        
+                
+                
+                
                 <label>
-        
-                    <input
-                    type="radio"
-                    name="target_generation"
-                    value="ai">
-        
-                    پیشنهاد هوشمند AI
-        
+                
+                <input
+                type="radio"
+                name="target_generation"
+                value="ai">
+                
+                ساخت نتیجه پیشنهادی هوشمند
+                
                 </label>
         
         
@@ -483,6 +501,8 @@ function selectTarget(target){
     window.selectedTarget = target;
 
 
+    setStep("preferences");
+
     showPreferences();
 
 }
@@ -502,8 +522,9 @@ function submitTargetGenerationMode(){
 
     if(!mode){
 
-        alert(
-            "یک روش انتخاب کنید"
+        showToast(
+            "یک روش انتخاب کنید",
+            "error"
         );
 
         return;
@@ -522,6 +543,7 @@ function submitTargetGenerationMode(){
 
     window.selectedProblemType = "clustering";
 
+    setStep("preferences");
     showClusteringPreferences();
 
     }
@@ -565,27 +587,32 @@ async function generateAITarget(){
         );
 
 
-        const response =
-            await fetch(
-                "http://127.0.0.1:8000/generate-target-with-ai",
-                {
-                    method:"POST",
-                    body:formData
-                }
-            );
+        showLoading("هوش مصنوعی در حال ساخت Target است...");
 
+        let result;
 
-        const result =
-            await response.json();
+        try {
 
+            const response =
+                await fetch(
+                    "http://127.0.0.1:8000/generate-target-with-ai",
+                    {
+                        method:"POST",
+                        body:formData
+                    }
+                );
 
+            result = await response.json();
 
+        } catch (err) {
 
-    window.generatedDatasetId =
-        result.data.dataset_id;
+            hideLoading();
+            showToast("ارتباط با سرور برقرار نشد", "error");
+            return;
 
+        }
 
-
+        hideLoading();
 
 
         if(!result.success){
@@ -594,9 +621,9 @@ async function generateAITarget(){
 
         `
         <div class="error">
-    
-            ${result.error}
-    
+
+            ${result.error.message || result.error}
+
         </div>
         `;
 
@@ -609,6 +636,8 @@ async function generateAITarget(){
     const target =
         result.data.target_column
     window.aiGeneratedDatasetId =
+        result.data.dataset_id;
+    window.generatedDatasetId =
         result.data.dataset_id;
 
 
@@ -648,13 +677,22 @@ async function generateAITarget(){
     
     
         <p>
-    
+
             ${result.data.reason}
-    
+
         </p>
-    
-    
-    
+
+
+        <h4>
+            ویژگی‌های استفاده‌شده:
+        </h4>
+
+        <p>
+            ${(result.data.important_features || []).join("، ")}
+        </p>
+
+
+
         <button onclick="acceptAITarget('${target}')">
     
             تایید و ادامه
@@ -687,8 +725,9 @@ function showManualTargetSelection(){
     if(targets.length === 0){
 
 
-        alert(
-            "برای این دیتاست Target مناسبی برای ورود دستی پیدا نشد. لطفاً یکی از گزینه‌های دیگر را انتخاب کنید."
+        showToast(
+            "برای این دیتاست Target مناسبی برای ورود دستی پیدا نشد. لطفاً یکی از گزینه‌های دیگر را انتخاب کنید.",
+            "error"
         );
 
 
@@ -766,8 +805,7 @@ function submitManualTarget(){
     window.selectedProblemType =
         "classification";
 
-
-
+    setStep("preferences");
 
 
     showPreferences();
@@ -785,11 +823,8 @@ function acceptAITarget(target){
 
     window.selectedProblemType =
         "classification";
-       console.log(
-        "SELECTED TARGET:",
-        window.selectedTarget
-    );
 
+    setStep("preferences");
 
     showPreferences();
 
