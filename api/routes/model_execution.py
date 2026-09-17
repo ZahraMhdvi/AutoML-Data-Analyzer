@@ -154,8 +154,6 @@ def run_model(
                     "این Target برای Classification مناسب نیست چون بعضی کلاس‌ها نمونه کافی ندارند"
                 )
 
-
-
         result = execution_service.execute(
 
             algorithm,
@@ -164,7 +162,9 @@ def run_model(
 
             processed["target"],
 
-            problem_type
+            problem_type,
+
+            preferences
 
         )
 
