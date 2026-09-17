@@ -215,6 +215,8 @@ function submitClusteringPreferences(){
 
     window.selectedTarget = "";
 
+    setStep("model");
+
     runModelSelection();
 
 
@@ -235,6 +237,8 @@ function continueWithClustering(){
     window.selectedTarget =
         "";
 
+
+    setStep("model");
 
     runModelSelection();
 
