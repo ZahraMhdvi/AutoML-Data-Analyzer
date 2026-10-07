@@ -20,10 +20,10 @@ logger = logging.getLogger(__name__)
 
 
 @router.post(
-    "/run-model",
+    "/run-selected-model",
     response_model=ModelExecutionResponse
 )
-def run_model(
+def run_selected_model(
 
         file: UploadFile = File(...),
 
