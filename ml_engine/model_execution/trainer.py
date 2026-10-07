@@ -111,17 +111,18 @@ class ModelTrainer:
 
         models = {
 
+
             "Logistic Regression":
-                LogisticRegression(),
+                LogisticRegression(max_iter=2000),
 
             "Decision Tree":
-                DecisionTreeClassifier(),
+                DecisionTreeClassifier(random_state=42),
 
             "Random Forest":
-                RandomForestClassifier(),
+                RandomForestClassifier(random_state=42),
 
             "XGBoost":
-                XGBClassifier(),
+                XGBClassifier(random_state=42),
 
             "SVM":
                 SVC(),

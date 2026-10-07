@@ -82,7 +82,15 @@ class ProblemRecommendationEngine:
             score += 20
             reasons.append("Dataset size is suitable for clustering")
         targets = analysis_result["targets"]
-        if len(targets) == 0:
+
+
+        strong_targets = [
+            target
+            for target in targets
+            if target["score"] >= 80
+        ]
+
+        if len(strong_targets) == 0:
             score += 30
             reasons.append("No target column detected")
 

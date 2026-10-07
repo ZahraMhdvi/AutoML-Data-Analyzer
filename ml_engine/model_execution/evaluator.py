@@ -9,7 +9,10 @@ from sklearn.metrics import (
 from collections import Counter
 from sklearn.decomposition import PCA
 from sklearn.preprocessing import StandardScaler
-from sklearn.decomposition import PCA
+import numpy as np
+
+
+MAX_SCATTER_POINTS = 3000
 
 
 class ModelEvaluator:
@@ -31,14 +34,21 @@ class ModelEvaluator:
 
         predictions = model.predict(X)
 
+
+        labels = sorted(
+            set(int(value) for value in y)
+            | set(int(value) for value in predictions)
+        )
+
         matrix = confusion_matrix(
             y,
-            predictions
+            predictions,
+            labels=labels
         )
 
         classes = [
             str(label)
-            for label in sorted(set(y))
+            for label in labels
         ]
 
         feature_importance = None
@@ -58,37 +68,57 @@ class ModelEvaluator:
 
             ]
 
+        elif hasattr(model, "coef_"):
+
+
+            weights = np.abs(np.asarray(model.coef_)).mean(axis=0)
+            total = float(weights.sum()) or 1.0
+
+            feature_importance = [
+
+                {
+                    "feature": column,
+                    "importance": float(value) / total
+                }
+
+                for column, value in zip(
+                    X.columns,
+                    weights
+                )
+
+            ]
+
         return {
 
             "accuracy":
-                accuracy_score(
+                float(accuracy_score(
                     y,
                     predictions
-                ),
+                )),
 
             "precision":
-                precision_score(
+                float(precision_score(
                     y,
                     predictions,
                     average="weighted",
                     zero_division=0
-                ),
+                )),
 
             "recall":
-                recall_score(
+                float(recall_score(
                     y,
                     predictions,
                     average="weighted",
                     zero_division=0
-                ),
+                )),
 
             "f1":
-                f1_score(
+                float(f1_score(
                     y,
                     predictions,
                     average="weighted",
                     zero_division=0
-                ),
+                )),
 
             "confusion_matrix":
                 [
@@ -103,21 +133,34 @@ class ModelEvaluator:
                 classes,
 
             "feature_importance":
-                feature_importance
+                feature_importance,
+
+            "test_size":
+                int(len(y))
 
         }
 
     def _clustering_metrics(self, model, X):
 
-        labels = model.labels_
+        labels = np.asarray(model.labels_)
 
         scaled_X = StandardScaler().fit_transform(X)
 
-        pca = PCA(n_components=2)
+        components = min(2, scaled_X.shape[1], scaled_X.shape[0])
+
+        pca = PCA(n_components=components)
 
         reduced = pca.fit_transform(
             scaled_X
         )
+
+        if components < 2:
+            reduced = np.column_stack([
+                reduced[:, 0],
+                np.zeros(len(reduced))
+            ])
+
+        step = max(1, int(np.ceil(len(labels) / MAX_SCATTER_POINTS)))
 
         cluster_points = [
 
@@ -128,8 +171,8 @@ class ModelEvaluator:
             }
 
             for point, label in zip(
-                reduced,
-                labels
+                reduced[::step],
+                labels[::step]
             )
 
         ]
@@ -203,7 +246,7 @@ class ModelEvaluator:
                 clusters,
 
             "noise_points":
-                noise,
+                int(noise),
             "cluster_sizes":
                 cluster_sizes,
             "cluster_points":
@@ -219,7 +262,7 @@ class ModelEvaluator:
 
             valid_indices = labels != -1
 
-            result["silhouette_score"] = (
+            result["silhouette_score"] = float(
                 silhouette_score(
                     X[valid_indices],
                     labels[valid_indices]

@@ -20,7 +20,8 @@ class ModelExecutionService:
             X,
             y,
             problem_type,
-            preferences=None
+            preferences=None,
+            target_classes=None
     ):
 
 
@@ -31,6 +32,15 @@ class ModelExecutionService:
 
             model = self.trainer.train(algorithm,X_train,y_train)
             metrics = self.evaluator.evaluate(model,X_test,y_test,problem_type)
+
+
+            if target_classes:
+                metrics["classes"] = [
+                    target_classes[int(label)]
+                    if int(label) < len(target_classes)
+                    else label
+                    for label in metrics["classes"]
+                ]
 
 
         elif problem_type == "clustering":

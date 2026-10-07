@@ -13,6 +13,16 @@ class AnalysisApplication:
     def analyze(self, file_path):
 
         analysis_result = self.analyzer.analyze(file_path)
+
+        return self._build(analysis_result)
+
+    def analyze_dataframe(self, dataframe):
+
+        analysis_result = self.analyzer.analyze_dataframe(dataframe)
+
+        return self._build(analysis_result)
+
+    def _build(self, analysis_result):
         recommendations = (self.problem_engine.recommend(analysis_result))
         recommended_targets = [
             target

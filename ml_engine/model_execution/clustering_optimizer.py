@@ -7,8 +7,11 @@ class ClusteringOptimizer:
 
 
     def find_best_k(self,X,min_k=2,max_k=10):
-        best_k = None
+        best_k = min_k
         best_score = -1
+
+
+        max_k = min(max_k, len(X) - 1)
 
 
         for k in range(min_k,max_k + 1):

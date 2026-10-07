@@ -13,7 +13,7 @@ def test_kmeans_execution():
     service = ModelExecutionService()
     result = service.execute("KMeans",processed["dataframe"],None,"clustering")
     assert "metrics" in result
-    assert "number_of_clusters" in result["metrics"]
+    assert "cluster_count" in result["metrics"]
 
 def test_dbscan_execution():
         df = pd.read_excel("data/customer_dataset.xlsx")
@@ -27,7 +27,7 @@ def test_dbscan_execution():
             "clustering"
         )
         assert "metrics" in result
-        assert "number_of_clusters" in result["metrics"]
+        assert "cluster_count" in result["metrics"]
 
 
 
@@ -39,4 +39,4 @@ def test_agglomerative_execution():
     service = ModelExecutionService()
     result = service.execute("Agglomerative Clustering",processed["dataframe"],None,"clustering")
     assert "metrics" in result
-    assert "number_of_clusters" in result["metrics"]
+    assert "cluster_count" in result["metrics"]

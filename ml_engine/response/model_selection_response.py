@@ -14,3 +14,5 @@ class ModelSelectionResponse:
     target: Optional[str]
 
     recommendations: List[RecommendationResponse]
+
+    data_characteristics: Optional[dict] = None
