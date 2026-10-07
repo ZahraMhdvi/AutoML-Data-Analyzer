@@ -1,15 +1,13 @@
 from fastapi import APIRouter, UploadFile, File, Form
-import tempfile
-import pandas as pd
 import json
+import logging
 
-from ml_engine.preprocessing.pipeline import (
-    PreprocessingPipeline
+from ml_engine.model_execution.runner import (
+    run_model_on_dataframe,
+    ModelRunError,
 )
 
-from ml_engine.model_execution.executor import (
-    ModelExecutionService
-)
+from api.core.datasets import read_uploaded_dataframe
 
 from api.schemas.model_execution_response_schema import (
     ModelExecutionResponse
@@ -18,9 +16,7 @@ from api.schemas.model_execution_response_schema import (
 
 router = APIRouter()
 
-
-execution_service = ModelExecutionService()
-
+logger = logging.getLogger(__name__)
 
 
 @router.post(
@@ -44,48 +40,21 @@ def run_model(
 
     try:
 
-
         preferences = json.loads(
             preferences
         )
-
 
         generated_dataset_id = (
             preferences.get(
                 "generated_dataset_id"
             )
         )
-        print(
-            "GENERATED DATASET ID:",
-            generated_dataset_id
-        )
-
-
-
-        with tempfile.NamedTemporaryFile(
-                delete=False,
-                suffix=".xlsx"
-        ) as temp:
-
-
-            temp.write(
-                file.file.read()
-            )
-
-
-            path = temp.name
-
-
 
         if generated_dataset_id:
-            print(
-                "USING AI GENERATED DATASET"
-            )
 
             from api.routes.ai_target import (
                 generated_datasets
             )
-
 
             if generated_dataset_id not in generated_datasets:
 
@@ -93,82 +62,21 @@ def run_model(
                     "Generated dataset not found"
                 )
 
-
             df = generated_datasets[
                 generated_dataset_id
             ]
-            print(
-                "COLUMNS:",
-                df.columns.tolist()
-            )
-
-
 
         else:
 
+            df = read_uploaded_dataframe(file)
 
-            df = pd.read_excel(
-                path
-            )
-
-
-
-        pipeline = PreprocessingPipeline(
-
+        result = run_model_on_dataframe(
             df,
-
-            problem_type,
-
-            target if target else None
-
-        )
-
-
-
-        processed = (
-            pipeline.process()
-        )
-
-
-
-        if problem_type == "classification":
-
-
-            if processed["target"] is None:
-
-                raise ValueError(
-                    "Target missing"
-                )
-
-
-
-            counts = pd.Series(
-                processed["target"]
-            ).value_counts()
-
-
-
-            if counts.min() < 2:
-
-                raise ValueError(
-                    "این Target برای Classification مناسب نیست چون بعضی کلاس‌ها نمونه کافی ندارند"
-                )
-
-        result = execution_service.execute(
-
             algorithm,
-
-            processed["dataframe"],
-
-            processed["target"],
-
             problem_type,
-
+            target or None,
             preferences
-
         )
-
-
 
         return ModelExecutionResponse(
 
@@ -180,10 +88,17 @@ def run_model(
 
         )
 
+    except ModelRunError as e:
 
+        return ModelExecutionResponse(
+            success=False,
+            data=None,
+            error={"code": "EXECUTION_ERROR", "message": str(e)}
+        )
 
     except Exception as e:
 
+        logger.exception("Model execution failed")
 
         return ModelExecutionResponse(
 
