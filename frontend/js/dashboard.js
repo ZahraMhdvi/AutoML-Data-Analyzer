@@ -69,20 +69,81 @@ function formatPercent(value){
 
 
 
-function renderDashboard(data){
+const activeCharts = [];
 
 
-    setStep(
-        "results"
-    );
+function trackChart(chart){
 
+    activeCharts.push(chart);
+
+    return chart;
+
+}
+
+
+function destroyCharts(){
+
+    while(activeCharts.length){
+
+        try {
+            activeCharts.pop().destroy();
+        }
+        catch(err){
+
+        }
+
+    }
+
+
+    if(window.Chart && Chart.instances){
+
+        Object.values(Chart.instances).forEach(chart => {
+
+            try {
+                chart.destroy();
+            }
+            catch(err){
+
+            }
+
+        });
+
+    }
+
+    featureChartInstance = null;
+
+}
+
+
+if(window.Chart){
+
+    Chart.defaults.font.family =
+        '"Vazirmatn", "Segoe UI", Tahoma, Arial, sans-serif';
+
+    Chart.defaults.color = "#475467";
+
+}
+
+
+function renderDashboard(data, container){
+
+    container =
+        container ||
+        document.getElementById("result");
+
+    destroyCharts();
+
+    const problemType =
+        data.problem_type ||
+        (data.report && data.report.problem_type);
 
     if(
-        data.report.problem_type === "clustering"
+        problemType === "clustering"
     ){
 
         renderClusteringDashboard(
-            data
+            data,
+            container
         );
 
     }
@@ -90,30 +151,79 @@ function renderDashboard(data){
     else{
 
         renderClassificationDashboard(
-            data
+            data,
+            container
         );
 
     }
+
+    container.insertAdjacentHTML(
+        "beforeend",
+        renderDataSummary(data)
+    );
+
+}
+
+
+function renderDataSummary(data){
+
+    const summary =
+        data.data_summary;
+
+    if(!summary){
+        return "";
+    }
+
+    const dropped =
+        (summary.dropped_columns || []);
+
+    return `
+
+    <div class="card card--muted">
+
+        <h3>
+            داده‌های استفاده‌شده در این تحلیل
+        </h3>
+
+        <ul class="facts">
+
+            <li><span>تعداد کل ردیف‌ها</span><b>${formatNumber(summary.rows)}</b></li>
+
+            <li><span>ردیف‌های استفاده‌شده پس از پاک‌سازی</span><b>${formatNumber(summary.rows_used)}</b></li>
+
+            <li><span>تعداد ویژگی‌ها پس از آماده‌سازی</span><b>${formatNumber(summary.features)}</b></li>
+
+        </ul>
+
+        ${
+            dropped.length
+            ?
+            `<p class="hint">ستون‌های شناسه یا متنی که در تحلیل استفاده نشدند: ${dropped.map(escapeHtml).join("، ")}</p>`
+            :
+            ""
+        }
+
+    </div>
+
+    `;
 
 }
 
 
 
-function renderClassificationDashboard(data){
+function renderClassificationDashboard(data, container){
 
 
     const metrics =
         data.metrics;
 
 
-    document.getElementById(
-        "result"
-    )
+    container
     .innerHTML = `
 
 
     <h2>
-        نتیجه تحلیل مدل ${data.algorithm}
+        نتیجه تحلیل مدل ${escapeHtml(data.algorithm)}
     </h2>
 
 
@@ -421,7 +531,7 @@ function renderConfusionMatrix(
 
 
 
-function renderClusteringDashboard(data){
+function renderClusteringDashboard(data, container){
 
 
     const metrics =
@@ -429,16 +539,14 @@ function renderClusteringDashboard(data){
 
 
 
-    document.getElementById(
-        "result"
-    )
+    container
     .innerHTML = `
 
 
 
     <h2>
 
-        نتیجه گروه‌بندی داده‌ها با مدل ${data.algorithm}
+        نتیجه گروه‌بندی داده‌ها با مدل ${escapeHtml(data.algorithm)}
 
     </h2>
 

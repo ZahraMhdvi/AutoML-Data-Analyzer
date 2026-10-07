@@ -249,27 +249,207 @@ function showToast(message, type) {
 }
 
 
-document.addEventListener("DOMContentLoaded", () => {
 
-    const dropzone = document.getElementById("dropzone");
-    const fileInput = document.getElementById("datasetFile");
-    const fileNameLabel = document.getElementById("fileNameLabel");
+
+function escapeHtml(value) {
+
+    return String(value ?? "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#39;");
+
+}
+
+
+function toFaDigits(value) {
+
+    return String(value).replace(/[0-9]/g, d => "۰۱۲۳۴۵۶۷۸۹"[d]);
+
+}
+
+
+function formatNumber(value) {
+
+    if (value === null || value === undefined || Number.isNaN(value)) {
+        return "-";
+    }
+
+    return Number(value).toLocaleString("fa-IR");
+
+}
+
+
+function formatDate(iso, withTime = true) {
+
+    if (!iso) {
+        return "-";
+    }
+
+    const date = new Date(iso);
+
+    if (Number.isNaN(date.getTime())) {
+        return iso;
+    }
+
+    const options = withTime
+        ? { year: "numeric", month: "long", day: "numeric", hour: "2-digit", minute: "2-digit" }
+        : { year: "numeric", month: "long", day: "numeric" };
+
+    try {
+        return date.toLocaleString("fa-IR", options);
+    }
+    catch (err) {
+        return date.toLocaleString();
+    }
+
+}
+
+
+function showView(id) {
+
+    document.querySelectorAll(".view").forEach(view => {
+        view.hidden = view.id !== id;
+    });
+
+    window.scrollTo({ top: 0 });
+
+}
+
+
+
+
+function openModal(id) {
+
+    const modal = document.getElementById(id);
+
+    if (!modal) {
+        return;
+    }
+
+    modal.hidden = false;
+    document.body.classList.add("modal-open");
+
+    const focusable = modal.querySelector("button:not([data-close-modal]), input, [tabindex]");
+
+    if (focusable) {
+        setTimeout(() => focusable.focus(), 30);
+    }
+
+}
+
+
+function closeModal(id) {
+
+    const modal = document.getElementById(id);
+
+    if (!modal) {
+        return;
+    }
+
+    modal.hidden = true;
+
+    if (!document.querySelector(".modal:not([hidden])")) {
+        document.body.classList.remove("modal-open");
+    }
+
+}
+
+
+function confirmDialog(title, text, okLabel = "تایید") {
+
+    return new Promise(resolve => {
+
+        document.getElementById("confirmTitle").textContent = title;
+        document.getElementById("confirmText").textContent = text;
+
+        const ok = document.getElementById("confirmOk");
+        ok.textContent = okLabel;
+
+        const modal = document.getElementById("confirmModal");
+
+        const finish = (value) => {
+            ok.removeEventListener("click", onOk);
+            modal.removeEventListener("modal:closed", onCancel);
+            closeModal("confirmModal");
+            resolve(value);
+        };
+
+        const onOk = () => finish(true);
+        const onCancel = () => finish(false);
+
+        ok.addEventListener("click", onOk);
+        modal.addEventListener("modal:closed", onCancel);
+
+        openModal("confirmModal");
+
+    });
+
+}
+
+
+document.addEventListener("click", event => {
+
+    const closer = event.target.closest("[data-close-modal]");
+
+    if (closer) {
+        const modal = closer.closest(".modal");
+        closeModal(modal.id);
+        modal.dispatchEvent(new Event("modal:closed"));
+    }
+
+});
+
+
+document.addEventListener("keydown", event => {
+
+    if (event.key !== "Escape") {
+        return;
+    }
+
+    const modal = document.querySelector(".modal:not([hidden])");
+
+    if (modal && !document.getElementById("loadingOverlay").classList.contains("loading-overlay--visible")) {
+        closeModal(modal.id);
+        modal.dispatchEvent(new Event("modal:closed"));
+    }
+
+});
+
+
+
+
+function setupDropzone(dropzone, fileInput, fileNameLabel, onChange) {
 
     if (!dropzone || !fileInput) {
         return;
     }
 
-    const updateFileName = () => {
+    const update = () => {
 
         const file = fileInput.files[0];
 
         fileNameLabel.textContent = file ? file.name : "";
 
+        dropzone.classList.toggle("dropzone--filled", Boolean(file));
+
+        if (onChange) {
+            onChange(file);
+        }
+
     };
 
     dropzone.addEventListener("click", () => fileInput.click());
 
-    fileInput.addEventListener("change", updateFileName);
+    dropzone.addEventListener("keydown", event => {
+        if (event.key === "Enter" || event.key === " ") {
+            event.preventDefault();
+            fileInput.click();
+        }
+    });
+
+    fileInput.addEventListener("change", update);
 
     ["dragenter", "dragover"].forEach(eventName => {
 
@@ -291,15 +471,20 @@ document.addEventListener("DOMContentLoaded", () => {
 
     dropzone.addEventListener("drop", (event) => {
 
-        const file = event.dataTransfer.files[0];
+        const files = event.dataTransfer.files;
 
-        if (file) {
-            fileInput.files = event.dataTransfer.files;
-            updateFileName();
+        if (files && files[0]) {
+            fileInput.files = files;
+            update();
         }
 
     });
 
-    setStep("upload");
+    return {
+        reset() {
+            fileInput.value = "";
+            update();
+        }
+    };
 
-});
+}
