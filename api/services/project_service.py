@@ -1,5 +1,6 @@
 
 
+import logging
 import os
 import shutil
 
@@ -15,7 +16,8 @@ from api.core.db import (
 )
 from api.core.datasets import read_dataset_file, check_extension
 from ml_engine.analysis.application.analysis_application import AnalysisApplication
-from ml_engine.ai.target_generator import TargetGenerator
+from ml_engine.ai.target_generator import TargetGenerator, build_statistical_definition
+from ml_engine.ai.llm_target_service import LLMTargetServiceError
 from ml_engine.model_execution.runner import run_model_on_dataframe
 from ml_engine.model_selection.application.model_selection_application import (
     ModelSelectionApplication,
@@ -29,6 +31,8 @@ from ml_engine.model_selection.data_characteristics import DataCharacteristicsDe
 
 AI_TARGET_COLUMN = "generated_target"
 
+logger = logging.getLogger(__name__)
+
 analysis_application = AnalysisApplication()
 model_selection_application = ModelSelectionApplication()
 target_generator = TargetGenerator()
@@ -37,6 +41,7 @@ characteristics_detector = DataCharacteristicsDetector()
 
 class WorkflowError(ValueError):
     """A user-facing problem with the request (HTTP 400)."""
+
 
 
 def get_project_row(conn, user_id, project_id):
@@ -185,9 +190,11 @@ def _public_config(config):
         public["ai_target"] = {
             "important_features": definition.get("important_features"),
             "reason": definition.get("reason"),
+            "method": definition.get("method", "ai"),
         }
 
     return public
+
 
 
 def save_batch_file(project_id, version_no, content, filename):
@@ -474,20 +481,74 @@ def get_characteristics(user_id, project_id, problem_type, target, target_mode):
     return characteristics_detector.detect(working, target=config["target"])
 
 
+def _statistical_definition(df):
+
+    try:
+        return build_statistical_definition(df)
+    except ValueError:
+        raise WorkflowError(
+            "ساخت Target برای این دیتاست ممکن نشد چون ستون عددی مناسبی ندارد. "
+            "یکی از گزینه‌های دیگر (انتخاب دستی یا گروه‌بندی) را انتخاب کنید."
+        )
+
+
 def generate_ai_target(user_id, project_id, llm_service, profile_builder):
 
-    if llm_service is None:
-        raise WorkflowError(
-            "ساخت Target با هوش مصنوعی پیکربندی نشده است. کلید OPENROUTER_API_KEY را در فایل .env قرار دهید."
-        )
 
     project, df = load_project_dataframe(user_id, project_id)
 
-    definition = llm_service.generate_target_definition(profile_builder(df))
+    notice = None
 
-    generated = target_generator.generate(df, definition)
+    if llm_service is None:
+
+        definition = _statistical_definition(df)
+        notice = (
+            "سرویس هوش مصنوعی پیکربندی نشده است (کلید OPENROUTER_API_KEY در فایل .env نیست)؛ "
+            "به‌جای آن، Target با یک روش آماری از روی داده‌ها ساخته شد."
+        )
+
+    else:
+
+        try:
+            definition = llm_service.generate_target_definition(profile_builder(df))
+
+        except LLMTargetServiceError as exc:
+
+            logger.warning(
+                "AI target generation failed, using statistical fallback: %s",
+                " | ".join(getattr(exc, "details", []) or [str(exc)])
+            )
+
+            definition = _statistical_definition(df)
+            notice = (
+                "در حال حاضر مدل‌های هوش مصنوعی پاسخ ندادند؛ "
+                "به‌جای آن، Target با یک روش آماری از روی داده‌ها ساخته شد. "
+                "می‌توانید ادامه دهید یا کمی بعد «تلاش دوباره» را بزنید."
+            )
+
+    try:
+        generated = target_generator.generate(df, definition)
+
+    except ValueError:
+
+        if definition.get("method") == "statistical":
+            raise WorkflowError(
+                "ساخت Target برای این دیتاست ممکن نشد؛ داده‌ها تنوع کافی ندارند. "
+                "یکی از گزینه‌های دیگر (انتخاب دستی یا گروه‌بندی) را انتخاب کنید."
+            )
+
+
+        definition = _statistical_definition(df)
+        generated = target_generator.generate(df, definition)
+        notice = (
+            "ستون‌هایی که هوش مصنوعی پیشنهاد داد برای ساخت گروه‌ها مناسب نبودند؛ "
+            "Target با یک روش آماری از روی داده‌ها ساخته شد."
+        )
 
     counts = generated[AI_TARGET_COLUMN].value_counts()
+
+    level_order = {"Low": 0, "Medium": 1, "High": 2, "Very High": 3}
+    counts = counts.loc[sorted(counts.index, key=lambda label: (level_order.get(str(label), 99), str(label)))]
 
     save_draft(project_id, {"ai_definition": definition, "target_mode": "ai"})
 
@@ -499,6 +560,8 @@ def generate_ai_target(user_id, project_id, llm_service, profile_builder):
         ],
         "important_features": definition.get("important_features", []),
         "reason": definition.get("reason", ""),
+        "method": definition.get("method", "ai"),
+        "notice": notice,
     }
 
 

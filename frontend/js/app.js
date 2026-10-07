@@ -1,4 +1,9 @@
-
+// ---------------------------------------------------------------------------
+// Analysis wizard: problem type -> target -> preferences -> model -> results
+// ---------------------------------------------------------------------------
+//
+// The dataset is stored on the server as part of a project, so every step
+// sends the project id instead of re-uploading the file.
 
 const wizard = {
 
@@ -10,6 +15,7 @@ const wizard = {
 
     target: null,
 
+    // "detected" | "manual" | "ai" (classification) or "clustering"
     targetMode: null,
 
     preferences: null,
@@ -20,6 +26,7 @@ const wizard = {
 
 };
 
+// Kept for compatibility with older code paths.
 window.analysisData = null;
 
 
@@ -122,6 +129,9 @@ document.getElementById("wizardBackBtn")
     .addEventListener("click", wizardBack);
 
 
+// ---------------------------------------------------------------------------
+// Step 2: problem type
+// ---------------------------------------------------------------------------
 
 function renderAnalysis() {
 
@@ -281,7 +291,9 @@ function selectProblem(type) {
 }
 
 
-
+// ---------------------------------------------------------------------------
+// Step 3: target (label) selection
+// ---------------------------------------------------------------------------
 
 function showTargetSelection(){
 
@@ -611,11 +623,22 @@ function showAITargetResult(){
     const total =
         data.classes.reduce((sum, item) => sum + item.count, 0) || 1;
 
+    const isStatistical =
+        data.method === "statistical";
+
     wizardContainer().innerHTML = `
 
     <h2>
-        پیشنهاد هوشمند AI
+        ${isStatistical ? "Target پیشنهادی (روش آماری)" : "پیشنهاد هوشمند AI"}
     </h2>
+
+    ${
+        data.notice
+        ?
+        `<div class="notice">${escapeHtml(data.notice)}</div>`
+        :
+        ""
+    }
 
     <div class="card card--highlight">
 
@@ -651,7 +674,7 @@ function showAITargetResult(){
 
         <div class="button-row">
             <button type="button" id="acceptAiBtn">تایید و ادامه</button>
-            <button type="button" class="btn--ghost" id="retryAiBtn">ساخت دوباره</button>
+            <button type="button" class="btn--ghost" id="retryAiBtn">${isStatistical ? "تلاش دوباره با هوش مصنوعی" : "ساخت دوباره"}</button>
         </div>
 
     </div>
@@ -690,7 +713,9 @@ function acceptAITarget(){
 }
 
 
-
+// ---------------------------------------------------------------------------
+// Helpers shared by preferences / model selection
+// ---------------------------------------------------------------------------
 
 function wizardSettings(){
 
@@ -704,7 +729,10 @@ function wizardSettings(){
 }
 
 
-
+/**
+ * Card explaining what the system measured on the data by itself
+ * (noise and number of features), instead of asking the user.
+ */
 function renderCharacteristicsCard(characteristics, problemType){
 
     if(!characteristics){

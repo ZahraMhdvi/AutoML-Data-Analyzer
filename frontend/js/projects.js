@@ -1,4 +1,6 @@
-
+// ---------------------------------------------------------------------------
+// Profile (projects list), new project upload, project dashboard & versions
+// ---------------------------------------------------------------------------
 
 const projectCache = new Map();
 
@@ -26,7 +28,9 @@ const GOAL_LABELS = {
 };
 
 
-
+// ---------------------------------------------------------------------------
+// Profile: list of projects
+// ---------------------------------------------------------------------------
 
 async function showProjects(){
 
@@ -238,7 +242,9 @@ async function deleteProject(projectId, name){
 }
 
 
-
+// ---------------------------------------------------------------------------
+// New project (a completely new dataset)
+// ---------------------------------------------------------------------------
 
 const newProjectDropzone = setupDropzone(
     document.getElementById("dropzone"),
@@ -305,6 +311,9 @@ document.getElementById("analyzeBtn").addEventListener("click", async () => {
 });
 
 
+// ---------------------------------------------------------------------------
+// Loading a project
+// ---------------------------------------------------------------------------
 
 async function fetchProject(projectId, useCache = false){
 
@@ -347,7 +356,9 @@ async function showProjectSetup(projectId){
 }
 
 
-
+// ---------------------------------------------------------------------------
+// Project dashboard: versions ("branches") of the dataset
+// ---------------------------------------------------------------------------
 
 async function showProjectDashboard(projectId){
 
@@ -409,7 +420,11 @@ function renderProjectDashboard(){
     const targetLabel =
         config.problem_type !== "classification"
         ? null
-        : (config.target_mode === "ai" ? "Target هوشمند (ساخته‌شده با AI)" : config.target);
+        : (config.target_mode === "ai"
+            ? ((config.ai_target && config.ai_target.method === "statistical")
+                ? "Target ساخته‌شده (روش آماری)"
+                : "Target هوشمند (ساخته‌شده با AI)")
+            : config.target);
 
     const prefs =
         config.preferences || {};
@@ -437,7 +452,7 @@ function renderProjectDashboard(){
         ${
             config.ai_target
             ?
-            `<p class="hint">Target هوشمند از ترکیب ستون‌های ${(config.ai_target.important_features || []).map(escapeHtml).join("، ")} ساخته شده است. ${escapeHtml(config.ai_target.reason || "")}</p>`
+            `<p class="hint">${config.ai_target.method === "statistical" ? "Target" : "Target هوشمند"} از ترکیب ستون‌های ${(config.ai_target.important_features || []).map(escapeHtml).join("، ")} ساخته شده است. ${escapeHtml(config.ai_target.reason || "")}</p>`
             :
             ""
         }
@@ -688,7 +703,8 @@ function renderVersionSelection(){
 
     }
 
-
+    // The comparison chart lives outside the version dashboard; redraw it
+    // because renderDashboard() clears every chart on the page.
     renderVersionComparison(project);
 
 }
@@ -818,7 +834,7 @@ function renderVersionComparison(project){
     }
 
     if(versionChartInstance){
-        try { versionChartInstance.destroy(); } catch(err){  }
+        try { versionChartInstance.destroy(); } catch(err){ /* already destroyed */ }
     }
 
     versionChartInstance = new Chart(canvas, {
@@ -922,6 +938,9 @@ function startRename(){
 }
 
 
+// ---------------------------------------------------------------------------
+// Upload new records for the current project
+// ---------------------------------------------------------------------------
 
 const updateDropzone = setupDropzone(
     document.getElementById("updateDropzone"),

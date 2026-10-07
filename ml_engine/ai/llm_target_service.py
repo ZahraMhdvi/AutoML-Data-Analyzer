@@ -1,13 +1,30 @@
 import json
+import logging
 import os
 import re
 
+import openai
 from dotenv import load_dotenv
 from openai import OpenAI
 
 load_dotenv()
 
+logger = logging.getLogger(__name__)
+
 OPENROUTER_BASE_URL = "https://openrouter.ai/api/v1"
+
+
+DEFAULT_PRIMARY_MODEL = "google/gemma-4-31b-it:free"
+
+DEFAULT_FALLBACK_MODELS = [
+    "qwen/qwen3.8-27b:free",
+    "nvidia/nemotron-3-super-120b-a12b:free",
+    "nvidia/nemotron-3-ultra-550b-a55b:free",
+    "openrouter/free",
+]
+
+
+REQUEST_TIMEOUT = float(os.getenv("OPENROUTER_TIMEOUT", "45"))
 
 SYSTEM_PROMPT = (
     "You are a professional data scientist. "
@@ -18,7 +35,38 @@ SYSTEM_PROMPT = (
 
 
 class LLMTargetServiceError(Exception):
-    """Raised when no configured model can produce a usable target definition."""
+
+
+    def __init__(self, message, details=None):
+        super().__init__(message)
+        self.details = details or []
+
+
+def _describe_error(exc):
+
+
+    if isinstance(exc, openai.AuthenticationError):
+        return "کلید API نامعتبر است یا منقضی شده"
+
+    if isinstance(exc, openai.PermissionDeniedError):
+        return "دسترسی به این مدل مجاز نیست"
+
+    if isinstance(exc, openai.NotFoundError):
+        return "این مدل دیگر به‌صورت رایگان در دسترس نیست"
+
+    if isinstance(exc, openai.RateLimitError):
+        return "محدودیت تعداد درخواست مدل رایگان پر شده است"
+
+    if isinstance(exc, openai.APITimeoutError):
+        return "مدل در زمان مجاز پاسخ نداد"
+
+    if isinstance(exc, openai.APIConnectionError):
+        return "اتصال به سرویس OpenRouter برقرار نشد"
+
+    if isinstance(exc, openai.APIStatusError):
+        return f"سرویس با خطای {exc.status_code} پاسخ داد"
+
+    return "پاسخ مدل قابل استفاده نبود"
 
 
 class LLMTargetService:
@@ -28,33 +76,35 @@ class LLMTargetService:
 
         if not api_key:
             raise LLMTargetServiceError(
-                "No API key configured. Set OPENROUTER_API_KEY in the .env file."
+                "کلید OPENROUTER_API_KEY در فایل .env تنظیم نشده است."
             )
 
         self.client = OpenAI(
             api_key=api_key,
             base_url=OPENROUTER_BASE_URL,
+            timeout=REQUEST_TIMEOUT,
+
+            max_retries=0,
         )
 
-        primary_model = os.getenv(
-            "OPENROUTER_MODEL",
-            "nvidia/nemotron-3-ultra-550b-a55b:free",
+        primary_model = (
+            os.getenv("OPENROUTER_MODEL", "").strip()
+            or DEFAULT_PRIMARY_MODEL
         )
 
-        fallback_models = [
+        configured_fallbacks = [
             model.strip()
-            for model in os.getenv(
-                "OPENROUTER_FALLBACK_MODELS",
-                ""
-            ).split(",")
+            for model in os.getenv("OPENROUTER_FALLBACK_MODELS", "").split(",")
             if model.strip()
         ]
 
-        self.models = [primary_model] + [
-            model
-            for model in fallback_models
-            if model != primary_model
-        ]
+        fallback_models = configured_fallbacks or DEFAULT_FALLBACK_MODELS
+
+        self.models = []
+
+        for model in [primary_model] + fallback_models + ["openrouter/free"]:
+            if model not in self.models:
+                self.models.append(model)
 
     def _build_prompt(self, dataset_profile):
         return f"""
@@ -117,7 +167,37 @@ Return exactly this JSON shape:
         return json.loads(cleaned)
 
     @staticmethod
+    def _response_text(response):
+
+
+        choices = getattr(response, "choices", None)
+
+        if not choices:
+            error = getattr(response, "error", None)
+            raise ValueError(f"No choices in response (error: {error})")
+
+        message = getattr(choices[0], "message", None)
+
+        if message is None:
+            raise ValueError("Response has no message")
+
+        content = getattr(message, "content", None)
+
+        if not content:
+            # Reasoning models may put everything in the "reasoning" field
+            # and leave "content" empty.
+            content = getattr(message, "reasoning", None)
+
+        if not content:
+            raise ValueError("Empty response from model")
+
+        return content
+
+    @staticmethod
     def _validate(result, dataset_profile):
+        if not isinstance(result, dict):
+            raise ValueError("Model response is not a JSON object")
+
         required_keys = (
             "target_name",
             "classes",
@@ -136,6 +216,9 @@ Return exactly this JSON shape:
                 f"Model response missing keys: {', '.join(missing)}"
             )
 
+        if not isinstance(result["important_features"], list):
+            raise ValueError("important_features is not a list")
+
         available_columns = set(
             dataset_profile.get("columns", [])
         )
@@ -152,13 +235,15 @@ Return exactly this JSON shape:
             )
 
         result["important_features"] = valid_features
+        result["method"] = "ai"
 
         return result
 
     def generate_target_definition(self, dataset_profile):
         prompt = self._build_prompt(dataset_profile)
 
-        errors = []
+        details = []
+        reasons = []
 
         for model in self.models:
             try:
@@ -181,22 +266,27 @@ Return exactly this JSON shape:
                     },
                 )
 
-                result_text = response.choices[0].message.content
+                result = self._extract_json(self._response_text(response))
 
-                result = self._extract_json(result_text)
+                definition = self._validate(result, dataset_profile)
+                definition["model"] = model
 
-                return self._validate(
-                    result,
-                    dataset_profile
-                )
+                return definition
 
             except Exception as exc:
-                errors.append(
-                    f"{model}: {exc}"
-                )
+                details.append(f"{model}: {exc}")
+                reasons.append(f"{model}: {_describe_error(exc)}")
+                logger.warning("AI target generation failed with %s: %s", model, exc)
+
+
+                if isinstance(exc, openai.AuthenticationError):
+                    break
+
                 continue
 
         raise LLMTargetServiceError(
-            "AI target generation failed for all configured models. "
-            + " | ".join(errors)
+            "هیچ‌کدام از مدل‌های هوش مصنوعی پاسخ قابل استفاده‌ای نداد ("
+            + "؛ ".join(reasons)
+            + ")",
+            details,
         )

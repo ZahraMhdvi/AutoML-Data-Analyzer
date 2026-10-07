@@ -2,6 +2,7 @@ from fastapi import APIRouter, UploadFile, File
 import tempfile
 import pandas as pd
 import uuid
+import logging
 
 from ml_engine.ai.llm_target_service import (
     LLMTargetService,
@@ -9,13 +10,16 @@ from ml_engine.ai.llm_target_service import (
 )
 
 from ml_engine.ai.target_generator import (
-    TargetGenerator
+    TargetGenerator,
+    build_statistical_definition,
 )
 
 from ml_engine.column_analyzer import ColumnAnalyzer
 
 
 router = APIRouter()
+
+logger = logging.getLogger(__name__)
 
 
 generated_datasets = {}
@@ -65,15 +69,6 @@ def generate_target_with_ai(
         file: UploadFile = File(...)
 ):
 
-    if llm_service is None:
-
-        return {
-            "success": False,
-            "error": {
-                "code": "AI_NOT_CONFIGURED",
-                "message": "AI target generation is not configured. Set OPENROUTER_API_KEY in the .env file.",
-            },
-        }
 
     try:
 
@@ -91,11 +86,22 @@ def generate_target_with_ai(
         df = pd.read_excel(path)
 
         if df.empty:
-            raise ValueError("Dataset is empty")
+            raise ValueError("دیتاست خالی است")
 
-        dataset_profile = _build_dataset_profile(df)
+        notice = None
 
-        definition = llm_service.generate_target_definition(dataset_profile)
+        if llm_service is None:
+            definition = build_statistical_definition(df)
+            notice = "سرویس هوش مصنوعی پیکربندی نشده است؛ Target با روش آماری ساخته شد."
+
+        else:
+            try:
+                definition = llm_service.generate_target_definition(
+                    _build_dataset_profile(df)
+                )
+            except LLMTargetServiceError:
+                definition = build_statistical_definition(df)
+                notice = "مدل‌های هوش مصنوعی پاسخ ندادند؛ Target با روش آماری ساخته شد."
 
         generated_df = target_generator.generate(df, definition)
 
@@ -123,23 +129,11 @@ def generate_target_with_ai(
 
                 "important_features": definition["important_features"],
 
-                "reason": definition["reason"]
+                "reason": definition["reason"],
 
-            }
+                "method": definition.get("method", "ai"),
 
-        }
-
-    except LLMTargetServiceError as e:
-
-        return {
-
-            "success": False,
-
-            "error": {
-
-                "code": "AI_TARGET_ERROR",
-
-                "message": str(e)
+                "notice": notice
 
             }
 
@@ -147,6 +141,8 @@ def generate_target_with_ai(
 
     except Exception as e:
 
+        logger.exception("AI target generation failed")
+
         return {
 
             "success": False,
@@ -155,7 +151,7 @@ def generate_target_with_ai(
 
                 "code": "AI_TARGET_ERROR",
 
-                "message": str(e)
+                "message": f"ساخت Target ممکن نشد: {e}"
 
             }
 
