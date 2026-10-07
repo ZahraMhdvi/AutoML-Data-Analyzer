@@ -22,11 +22,6 @@ class AlgorithmScorer:
             )
         )
 
-        print("ALGORITHM:", algorithm_name)
-        print("PREFERENCES:", preferences)
-        print("EXPANDED:", expanded_preferences)
-        print("DATASET FEATURES:", dataset_features)
-        print("STRENGTHS:", strengths)
 
         for capability in expanded_preferences:
             if capability in strengths:
