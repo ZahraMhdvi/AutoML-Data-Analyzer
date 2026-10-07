@@ -72,10 +72,13 @@ class DBSCANOptimizer:
 
 
 
+
+                valid = labels != -1
+
                 score = silhouette_score(
-                    X,
-                    labels
-                )
+                    X[valid],
+                    labels[valid]
+                ) * (1 - noise_ratio)
 
 
                 if score > best_score:
