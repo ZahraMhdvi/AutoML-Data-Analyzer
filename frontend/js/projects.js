@@ -1,6 +1,4 @@
-// ---------------------------------------------------------------------------
-// Profile (projects list), new project upload, project dashboard & versions
-// ---------------------------------------------------------------------------
+
 
 const projectCache = new Map();
 
@@ -28,9 +26,6 @@ const GOAL_LABELS = {
 };
 
 
-// ---------------------------------------------------------------------------
-// Profile: list of projects
-// ---------------------------------------------------------------------------
 
 async function showProjects(){
 
@@ -242,9 +237,6 @@ async function deleteProject(projectId, name){
 }
 
 
-// ---------------------------------------------------------------------------
-// New project (a completely new dataset)
-// ---------------------------------------------------------------------------
 
 const newProjectDropzone = setupDropzone(
     document.getElementById("dropzone"),
@@ -311,9 +303,6 @@ document.getElementById("analyzeBtn").addEventListener("click", async () => {
 });
 
 
-// ---------------------------------------------------------------------------
-// Loading a project
-// ---------------------------------------------------------------------------
 
 async function fetchProject(projectId, useCache = false){
 
@@ -356,9 +345,6 @@ async function showProjectSetup(projectId){
 }
 
 
-// ---------------------------------------------------------------------------
-// Project dashboard: versions ("branches") of the dataset
-// ---------------------------------------------------------------------------
 
 async function showProjectDashboard(projectId){
 
@@ -703,8 +689,7 @@ function renderVersionSelection(){
 
     }
 
-    // The comparison chart lives outside the version dashboard; redraw it
-    // because renderDashboard() clears every chart on the page.
+
     renderVersionComparison(project);
 
 }
@@ -937,10 +922,6 @@ function startRename(){
 
 }
 
-
-// ---------------------------------------------------------------------------
-// Upload new records for the current project
-// ---------------------------------------------------------------------------
 
 const updateDropzone = setupDropzone(
     document.getElementById("updateDropzone"),

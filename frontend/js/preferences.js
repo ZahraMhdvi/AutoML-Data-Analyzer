@@ -1,10 +1,4 @@
-// ---------------------------------------------------------------------------
-// Step 4 (classification): user preferences
-// ---------------------------------------------------------------------------
-//
-// "Noise in the data" and "number of features" are NOT asked any more: the
-// backend measures them on the dataset and maps them to the algorithms
-// directly. Only questions the data cannot answer remain.
+
 
 function showPreferences(){
 
@@ -112,8 +106,7 @@ function submitPreferences(){
 
     }
 
-    // noise_presence and feature_dimension are filled in by the server
-    // from the dataset itself.
+
     wizard.preferences = {
         main_goal: mainGoal,
         data_growth: dataGrowth

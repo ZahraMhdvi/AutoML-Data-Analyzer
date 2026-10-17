@@ -1,9 +1,4 @@
-// ---------------------------------------------------------------------------
-// Analysis wizard: problem type -> target -> preferences -> model -> results
-// ---------------------------------------------------------------------------
-//
-// The dataset is stored on the server as part of a project, so every step
-// sends the project id instead of re-uploading the file.
+
 
 const wizard = {
 
@@ -15,7 +10,6 @@ const wizard = {
 
     target: null,
 
-    // "detected" | "manual" | "ai" (classification) or "clustering"
     targetMode: null,
 
     preferences: null,
@@ -26,7 +20,6 @@ const wizard = {
 
 };
 
-// Kept for compatibility with older code paths.
 window.analysisData = null;
 
 
@@ -129,9 +122,6 @@ document.getElementById("wizardBackBtn")
     .addEventListener("click", wizardBack);
 
 
-// ---------------------------------------------------------------------------
-// Step 2: problem type
-// ---------------------------------------------------------------------------
 
 function renderAnalysis() {
 
@@ -291,9 +281,6 @@ function selectProblem(type) {
 }
 
 
-// ---------------------------------------------------------------------------
-// Step 3: target (label) selection
-// ---------------------------------------------------------------------------
 
 function showTargetSelection(){
 
@@ -713,9 +700,7 @@ function acceptAITarget(){
 }
 
 
-// ---------------------------------------------------------------------------
-// Helpers shared by preferences / model selection
-// ---------------------------------------------------------------------------
+
 
 function wizardSettings(){
 
@@ -729,10 +714,7 @@ function wizardSettings(){
 }
 
 
-/**
- * Card explaining what the system measured on the data by itself
- * (noise and number of features), instead of asking the user.
- */
+
 function renderCharacteristicsCard(characteristics, problemType){
 
     if(!characteristics){
