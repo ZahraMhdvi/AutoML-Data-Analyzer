@@ -1,66 +1,32 @@
-from ml_engine.response.recommendation_response import (RecommendationResponse)
-from ml_engine.explanation.explanation_engine import (ExplanationEngine)
+from ml_engine.response.recommendation_response import RecommendationResponse
+
+
+HIGH_BAND = 70.0
+MEDIUM_BAND = 50.0
 
 
 class ResponseBuilder:
 
-    def __init__(self):
-        self.explanation_engine = ExplanationEngine()
-
-    def get_compatibility(self,score):
-
-        if score >= 70:
+    @staticmethod
+    def get_compatibility(score):
+        if score >= HIGH_BAND:
             return "high"
-
-        elif score >= 40:
+        if score >= MEDIUM_BAND:
             return "medium"
+        return "low"
 
-        else:
-            return "low"
-
-
-    def build(self,score_results,algorithms ):
-        responses = []
-
-        filtered_results = [
-
-            result
-            for result in score_results
-            if result.score > 0
-
-        ]
-
-        for index, result in enumerate(
-                filtered_results
-        ):
-            explanation = (
-                self.explanation_engine.generate(
-
-                    result,
-
-                    algorithms[
-                        result.algorithm_name
-                    ]
-
-                )
-            )
-
-            response = RecommendationResponse(
-
-                algorithm=explanation["algorithm"],
-
-                score=explanation["score"],
-
-                compatibility=self.get_compatibility(explanation["score"]),
-
+    def build(self, score_results, algorithms=None):
+        return [
+            RecommendationResponse(
+                algorithm=result.algorithm_name,
+                score=result.score,
+                compatibility=self.get_compatibility(result.score),
                 rank=index + 1,
-
-                reasons=explanation["reasons"],
-
-                limitations=explanation["limitations"]
-
+                reasons=result.reasons,
+                limitations=result.limitations,
+                evidence_considered=result.evidence_considered,
+                raw_points=result.raw,
+                max_points=result.bound,
             )
-
-            responses.append(response)
-
-        return responses
+            for index, result in enumerate(score_results)
+        ]

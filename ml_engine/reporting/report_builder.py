@@ -1,131 +1,21 @@
+
+
 class ReportBuilder:
 
-
-    def build(self,execution_result,problem_type):
-
-
+    def build(self, execution_result, problem_type):
+        metrics = execution_result["metrics"]
         if problem_type == "classification":
-            return self._classification_report(execution_result)
-
-
-        elif problem_type == "clustering":
-            return self._clustering_report(execution_result)
-
-        else:
-
-            raise ValueError(
-                "Unsupported problem type"
-            )
-
-
-    def _classification_report(self,result):
-
-        metrics = result["metrics"]
-
-        return {
-            "algorithm":
-                result["algorithm"],
-
-
-            "problem_type":
-                "classification",
-
-
-            "summary": {
-
-                "main_metric":
-                    "accuracy",
-
-                "value":
-                    metrics.get(
-                        "accuracy"
-                    )
-
-            },
-
-
-            "metrics":
-                metrics,
-
-
-            "charts":[
-
-                {
-                    "type":
-                        "metric_bar",
-
-                    "title":
-                        "Model Performance",
-
-                    "data":
-                        metrics
-
-                },
-
-                {
-                    "type":
-                        "confusion_matrix",
-
-                    "title":
-                        "Confusion Matrix",
-                    "data":
-                        metrics.get(
-                            "confusion_matrix"
-                        )
-
-                }
-
-            ]
-
-        }
-
-
-
-    def _clustering_report(self,result):
-
-        metrics = result["metrics"]
-
-        return {
-
-            "algorithm":
-                result["algorithm"],
-
-
-            "problem_type":
-                "clustering",
-
-
-            "summary": {
-
-                "clusters": metrics.get("cluster_count")
-
-            },
-
-
-            "metrics":
-                metrics,
-
-
-            "charts":[
-
-                {
-                    "type":
-                        "cluster_distribution",
-
-                    "title":
-                        "Cluster Sizes"
-
-                },
-
-                {
-                    "type":
-                        "scatter",
-
-                    "title":
-                        "Cluster Visualization"
-
-                }
-
-            ]
-
-        }
+            return {
+                "algorithm": execution_result["algorithm"],
+                "problem_type": "classification",
+                "summary": {"main_metric": "macro_f1", "value": metrics.get("macro_f1")},
+                "charts": [{"type": "metric_bar"}, {"type": "confusion_matrix"}, {"type": "permutation_importance"}],
+            }
+        if problem_type == "clustering":
+            return {
+                "algorithm": execution_result["algorithm"],
+                "problem_type": "clustering",
+                "summary": {"clusters": metrics.get("cluster_count")},
+                "charts": [{"type": "cluster_distribution"}, {"type": "scatter"}],
+            }
+        raise ValueError("Unsupported problem type")

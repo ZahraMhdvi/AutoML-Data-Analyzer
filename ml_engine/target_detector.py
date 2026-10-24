@@ -65,21 +65,21 @@ class TargetDetector:
                 score += 80
 
                 reasons.append(
-                    "Target keyword detected"
+                    "TARGET_KEYWORD"
                 )
 
             if self.has_reasonable_classes(column):
                 score += 20
 
                 reasons.append(
-                    "Reasonable number of classes"
+                    "REASONABLE_CLASS_COUNT"
                 )
 
             if info["semantic_type"] == "categorical":
                 score += 20
 
                 reasons.append(
-                    "Categorical target candidate"
+                    "CATEGORICAL_VALUES"
                 )
 
             if score > 0:
@@ -129,7 +129,7 @@ class TargetDetector:
                 "score": score,
 
                 "reason": [
-                    "Manual target candidate"
+                    "MANUAL_CANDIDATE"
                 ]
 
             })

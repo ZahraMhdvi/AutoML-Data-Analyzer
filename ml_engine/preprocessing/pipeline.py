@@ -1,17 +1,21 @@
+
+
 import re
 
+import numpy as np
 import pandas as pd
-from sklearn.preprocessing import LabelEncoder
+from sklearn.base import BaseEstimator, TransformerMixin
 
+from ml_engine.preprocessing.encoder import CategoricalEncoder
 from ml_engine.preprocessing.missing_handler import MissingHandler
 from ml_engine.preprocessing.outlier_detector import OutlierDetector
-from ml_engine.preprocessing.encoder import CategoricalEncoder
 from ml_engine.preprocessing.scaler import FeatureScaler
 
 
 IDENTIFIER_TOKENS = {"id", "uuid", "guid"}
 
-MAX_OUTLIER_DROP_RATIO = 0.25
+HIGH_MISSING_RATIO = 0.6
+NUMERIC_COERCE_RATIO = 0.95
 
 
 def _name_tokens(column):
@@ -20,6 +24,7 @@ def _name_tokens(column):
 
 
 def is_identifier_column(dataframe, column):
+
 
 
     if any(token in IDENTIFIER_TOKENS for token in _name_tokens(column)):
@@ -37,7 +42,6 @@ def is_identifier_column(dataframe, column):
 
 def is_free_text_column(dataframe, column):
 
-
     series = dataframe[column]
 
     if pd.api.types.is_numeric_dtype(series) or pd.api.types.is_bool_dtype(series):
@@ -48,143 +52,175 @@ def is_free_text_column(dataframe, column):
     return unique_count > 50 and unique_count / max(len(series), 1) > 0.5
 
 
-class PreprocessingPipeline:
+def sanitize_frame(frame, numeric_columns=None):
 
-    def __init__(
-            self,
-            dataframe,
-            problem_type,
-            target=None
-    ):
 
-        self.dataframe = dataframe
+    df = frame.copy()
 
+    numeric = df.select_dtypes(include="number").columns
+    if len(numeric):
+        df[numeric] = df[numeric].replace([np.inf, -np.inf], np.nan)
+
+    for column in numeric_columns or []:
+        if column in df.columns:
+            df[column] = pd.to_numeric(df[column], errors="coerce")
+
+    return df
+
+
+def mostly_numeric_text_columns(frame, ratio=NUMERIC_COERCE_RATIO):
+
+
+    columns = []
+    for column in frame.columns:
+        series = frame[column]
+        if pd.api.types.is_numeric_dtype(series) or pd.api.types.is_bool_dtype(series):
+            continue
+        values = series.dropna()
+        if values.empty:
+            continue
+        parsed = pd.to_numeric(values.astype(str).str.strip(), errors="coerce")
+        if parsed.notna().mean() >= ratio:
+            columns.append(column)
+    return columns
+
+
+class ColumnSelector(BaseEstimator, TransformerMixin):
+
+
+
+    def fit(self, X, y=None):
+        self.dropped_ = {}
+
+        for column in X.columns:
+            series = X[column]
+            reason = None
+
+            if series.isna().all():
+                reason = "ALL_MISSING"
+            elif pd.api.types.is_datetime64_any_dtype(series):
+                reason = "DATETIME"
+            elif is_identifier_column(X, column):
+                reason = "IDENTIFIER"
+            elif is_free_text_column(X, column):
+                reason = "FREE_TEXT"
+            elif series.nunique(dropna=True) <= 1:
+                reason = "CONSTANT"
+            elif series.isna().mean() > HIGH_MISSING_RATIO:
+                reason = "HIGH_MISSING"
+
+            if reason:
+                self.dropped_[column] = reason
+
+        self.kept_ = [column for column in X.columns if column not in self.dropped_]
+        return self
+
+    def transform(self, X):
+        return X.reindex(columns=self.kept_)
+
+
+class PreprocessingPipeline(BaseEstimator, TransformerMixin):
+
+
+
+    def __init__(self, problem_type="classification", target=None, outlier_policy="none",
+                 scale=True, max_categories=30):
         self.problem_type = problem_type
-
         self.target = target
-
-        self.target_classes = None
-
-        self.dropped_columns = []
-
-    def _drop_unusable_columns(self, df):
-
-        to_drop = []
-
-        for column in df.columns:
-
-            series = df[column]
-
-            if pd.api.types.is_datetime64_any_dtype(series):
-                to_drop.append(column)
-
-            elif is_identifier_column(df, column):
-                to_drop.append(column)
-
-            elif is_free_text_column(df, column):
-                to_drop.append(column)
-
-            elif series.isna().all():
-                to_drop.append(column)
-
-        self.dropped_columns = to_drop
-
-        return df.drop(columns=to_drop) if to_drop else df
-
-    def process(self):
-
-        df = self.dataframe.copy()
-
-        target_column = None
-
-        if self.problem_type == "classification":
-
-            if self.target in df.columns:
-
-                df = df[df[self.target].notna()]
-
-                raw_target = df[self.target].astype(str)
-
-                df = df.drop(
-                    columns=[self.target]
-                )
-
-                target_column = pd.Series(
-                    raw_target.values,
-                    index=df.index
-                )
-
-        df = self._drop_unusable_columns(df)
-
-        missing_handler = MissingHandler(df)
-
-        df = missing_handler.fill_missing()
-
-        if self.problem_type == "classification":
-
-            outlier_detector = OutlierDetector(df)
-
-            filtered = outlier_detector.remove_outliers()
-
-            if len(filtered) >= len(df) * (1 - MAX_OUTLIER_DROP_RATIO):
-                df = filtered
-
-            if target_column is not None:
-                target_column = target_column.loc[df.index]
-
-        if target_column is not None:
+        self.outlier_policy = outlier_policy
+        self.scale = scale
+        self.max_categories = max_categories
 
 
-            encoder = LabelEncoder()
 
-            encoded = encoder.fit_transform(target_column.values)
+    def fit(self, X, y=None):
+        X = self._features(X)
 
-            self.target_classes = [
-                str(value)
-                for value in encoder.classes_
-            ]
+        self.input_columns_ = list(X.columns)
+        self.coerced_numeric_ = mostly_numeric_text_columns(X)
 
-            target_column = encoded
+        frame = sanitize_frame(X, self.coerced_numeric_)
 
-        encoder = CategoricalEncoder(df)
+        self.selector_ = ColumnSelector().fit(frame)
+        frame = self.selector_.transform(frame)
 
-        df = encoder.encode()
+        self.imputer_ = MissingHandler().fit(frame)
+        frame = self.imputer_.transform(frame)
 
-        numeric_columns = list(
-            df.select_dtypes(
-                include=[
-                    "int64",
-                    "float64",
-                    "int32",
-                    "float32"
-                ]
-            ).columns
-        )
+        self.outliers_ = OutlierDetector(policy=self.outlier_policy).fit(frame)
+        frame = self.outliers_.transform(frame)
 
-        if numeric_columns:
+        self.encoder_ = CategoricalEncoder(max_categories=self.max_categories).fit(frame)
+        frame = self.encoder_.transform(frame)
+        frame = self._to_numeric(frame)
 
-            scaler = FeatureScaler(
-                df,
-                numeric_columns
-            )
+        self.scaler_ = FeatureScaler().fit(frame) if self.scale else None
 
-            df = scaler.scale()
+        self.feature_names_ = [str(column) for column in frame.columns]
+        self.n_train_rows_ = int(len(X))
+        return self
 
-        bool_columns = list(df.select_dtypes(include=["bool"]).columns)
 
-        if bool_columns:
-            df[bool_columns] = df[bool_columns].astype(int)
 
-        df.columns = [str(column) for column in df.columns]
+    def transform(self, X):
+        X = self._features(X).reindex(columns=self.input_columns_)
+
+        frame = sanitize_frame(X, self.coerced_numeric_)
+        frame = self.selector_.transform(frame)
+        frame = self.imputer_.transform(frame)
+        frame = self.outliers_.transform(frame)
+        frame = self.encoder_.transform(frame)
+        frame = self._to_numeric(frame)
+
+        if self.scaler_ is not None:
+            frame = self.scaler_.transform(frame)
+
+        frame.columns = [str(column) for column in frame.columns]
+        return frame.astype(float)
+
+    def get_feature_names_out(self, input_features=None):
+        return np.asarray(self.feature_names_, dtype=object)
+
+
+    def _features(self, X):
+        if self.target and self.target in X.columns:
+            return X.drop(columns=[self.target])
+        return X
+
+    @staticmethod
+    def _to_numeric(frame):
+        bools = frame.select_dtypes(include=["bool"]).columns
+        if len(bools):
+            frame[bools] = frame[bools].astype(int)
+        return frame
+
+    @property
+    def dropped_columns(self):
+        return list(self.selector_.dropped_)
+
+    def report(self):
+
+
 
         return {
-
-            "dataframe": df,
-
-            "target": target_column,
-
-            "target_classes": self.target_classes,
-
-            "dropped_columns": self.dropped_columns
-
+            "fitted_on_rows": self.n_train_rows_,
+            "dropped_columns": [
+                {"column": str(column), "reason": reason}
+                for column, reason in self.selector_.dropped_.items()
+            ],
+            "coerced_numeric_columns": [str(column) for column in self.coerced_numeric_],
+            "imputation": self.imputer_.get_params_report(),
+            "outliers": self.outliers_.get_params_report(),
+            "encoding": self.encoder_.get_params_report(),
+            "unseen_categories": dict(getattr(self.encoder_, "unseen_counts_", {}) or {}),
+            "scaling": self.scaler_.get_params_report() if self.scaler_ is not None else None,
+            "output_features": list(self.feature_names_),
         }
+
+
+
+    def process(self, dataframe):
+
+
+        features = self.fit(dataframe).transform(dataframe)
+        return {"dataframe": features, "dropped_columns": self.dropped_columns}

@@ -40,10 +40,17 @@ class AnalysisApplication:
                 +
                 possible_targets
         )
+        from dataclasses import asdict
+        from ml_engine.validation import validate_dataframe, column_kinds
+
+        dataframe = analysis_result["dataframe"]
+
         return {
 
             "profile": analysis_result["profile"],
-            "problem_recommendations": recommendations,
+            "issues": validate_dataframe(dataframe),
+            "column_kinds": column_kinds(dataframe),
+            "problem_recommendations": {key: asdict(value) for key, value in recommendations.items()},
             "recommended_targets": recommended_targets,
             "possible_targets": possible_targets,
             "target_required":
