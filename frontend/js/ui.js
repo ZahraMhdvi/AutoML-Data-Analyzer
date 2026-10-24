@@ -31,76 +31,28 @@ let STEP_ORDER = [
 
 function updateStepper(problemType){
 
+    STEP_ORDER = problemType === "clustering" ? CLUSTERING_STEPS.slice() : CLASSIFICATION_STEPS.slice();
+
     const targetStep =
-        document.querySelector(
-            '.step[data-step="target"]'
-        );
+        document.querySelector('.step[data-step="target"]');
 
-
-    if(problemType === "clustering"){
-
-        STEP_ORDER = [
-            "upload",
-            "problem",
-            "preferences",
-            "model",
-            "results"
-        ];
-
-
-        if(targetStep){
-            targetStep.style.display = "none";
-        }
-
-
-        document.querySelector(
-            '.step[data-step="preferences"] .step__dot'
-        ).textContent = "۳";
-
-        document.querySelector(
-            '.step[data-step="model"] .step__dot'
-        ).textContent = "۴";
-
-        document.querySelector(
-            '.step[data-step="results"] .step__dot'
-        ).textContent = "۵";
-
-
-    } else {
-
-
-        STEP_ORDER = [
-            "upload",
-            "problem",
-            "target",
-            "preferences",
-            "model",
-            "results"
-        ];
-
-
-        if(targetStep){
-            targetStep.style.display = "flex";
-        }
-
-
-        document.querySelector(
-            '.step[data-step="target"] .step__dot'
-        ).textContent = "۳";
-
-        document.querySelector(
-            '.step[data-step="preferences"] .step__dot'
-        ).textContent = "۴";
-
-        document.querySelector(
-            '.step[data-step="model"] .step__dot'
-        ).textContent = "۵";
-
-        document.querySelector(
-            '.step[data-step="results"] .step__dot'
-        ).textContent = "۶";
-
+    if(targetStep){
+        targetStep.style.display = problemType === "clustering" ? "none" : "flex";
     }
+
+    refreshStepNumbers();
+
+}
+
+
+function refreshStepNumbers(){
+
+    STEP_ORDER.forEach((step, index) => {
+        const dot = document.querySelector(`.step[data-step="${step}"] .step__dot`);
+        if(dot){
+            dot.textContent = localizeDigits(index + 1);
+        }
+    });
 
 }
 function setProblemSteps(problemType){
@@ -201,7 +153,7 @@ function showLoading(text) {
     const label = document.getElementById("loadingText");
 
     if (label) {
-        label.textContent = text || "در حال پردازش...";
+        label.textContent = text || t("common.processing");
     }
 
     if (overlay) {
@@ -265,44 +217,7 @@ function escapeHtml(value) {
 
 function toFaDigits(value) {
 
-    return String(value).replace(/[0-9]/g, d => "۰۱۲۳۴۵۶۷۸۹"[d]);
-
-}
-
-
-function formatNumber(value) {
-
-    if (value === null || value === undefined || Number.isNaN(value)) {
-        return "-";
-    }
-
-    return Number(value).toLocaleString("fa-IR");
-
-}
-
-
-function formatDate(iso, withTime = true) {
-
-    if (!iso) {
-        return "-";
-    }
-
-    const date = new Date(iso);
-
-    if (Number.isNaN(date.getTime())) {
-        return iso;
-    }
-
-    const options = withTime
-        ? { year: "numeric", month: "long", day: "numeric", hour: "2-digit", minute: "2-digit" }
-        : { year: "numeric", month: "long", day: "numeric" };
-
-    try {
-        return date.toLocaleString("fa-IR", options);
-    }
-    catch (err) {
-        return date.toLocaleString();
-    }
+    return localizeDigits(value);
 
 }
 
@@ -357,7 +272,7 @@ function closeModal(id) {
 }
 
 
-function confirmDialog(title, text, okLabel = "تایید") {
+function confirmDialog(title, text, okLabel = t("common.confirm")) {
 
     return new Promise(resolve => {
 

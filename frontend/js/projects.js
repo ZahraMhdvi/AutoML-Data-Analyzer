@@ -1,30 +1,19 @@
-
-
 const projectCache = new Map();
 
-let versionChartInstance = null;
-
 const projectPage = {
-
     project: null,
-
     selectedVersion: null
-
 };
 
 
-const PROBLEM_LABELS = {
-    classification: "پیش‌بینی نتیجه (Classification)",
-    clustering: "گروه‌بندی (Clustering)"
-};
+function problemLabel(type){
+    return type ? t(`problemType.${type}`) : "";
+}
 
 
-const GOAL_LABELS = {
-    accuracy: "بیشترین دقت",
-    speed: "سرعت بالا",
-    interpretability: "قابل توضیح بودن"
-};
-
+function goalLabel(goal){
+    return goal ? t(`goal.${goal}`) : "";
+}
 
 
 async function showProjects(){
@@ -32,13 +21,10 @@ async function showProjects(){
     showView("projectsView");
     setNav("projects");
 
-    const view =
-        document.getElementById("projectsView");
-
-    view.innerHTML = `<p class="hint">در حال بارگذاری پروژه‌ها...</p>`;
+    const view = document.getElementById("projectsView");
+    view.innerHTML = `<p class="hint">${t("loading.projects")}</p>`;
 
     let data;
-
     try {
         data = await api("/api/projects");
     }
@@ -49,75 +35,50 @@ async function showProjects(){
         return;
     }
 
-    const projects =
-        data.projects;
-
-    const user =
-        session.user || {};
-
-    const readyCount =
-        projects.filter(p => p.status === "ready").length;
-
-    const versionCount =
-        projects.reduce((sum, p) => sum + p.version_count, 0);
+    const projects = data.projects;
+    const user = session.user || {};
+    const readyCount = projects.filter(p => p.status === "ready").length;
+    const versionCount = projects.reduce((sum, p) => sum + p.version_count, 0);
 
     view.innerHTML = `
-
         <div class="profile">
-
-            <div class="profile__avatar">${escapeHtml((user.name || "?").charAt(0))}</div>
-
+            <div class="profile__avatar">${escapeHtml((user.name || "?").charAt(0).toUpperCase())}</div>
             <div class="profile__info">
-                <h2>سلام ${escapeHtml(user.name || "")}</h2>
+                <h2>${t("projects.hello", { name: escapeHtml(user.name || "") })}</h2>
                 <p dir="ltr" class="profile__email">${escapeHtml(user.email || "")}</p>
-                <p class="hint">عضو از ${formatDate(user.created_at, false)}</p>
+                <p class="hint">${t("projects.memberSince", { date: formatDate(user.created_at, false) })}</p>
             </div>
-
             <ul class="profile__stats">
-                <li><b>${formatNumber(projects.length)}</b><span>پروژه</span></li>
-                <li><b>${formatNumber(readyCount)}</b><span>داشبورد آماده</span></li>
-                <li><b>${formatNumber(versionCount)}</b><span>نسخه داده</span></li>
+                <li><b>${formatNumber(projects.length)}</b><span>${t("projects.statProjects")}</span></li>
+                <li><b>${formatNumber(readyCount)}</b><span>${t("projects.statReady")}</span></li>
+                <li><b>${formatNumber(versionCount)}</b><span>${t("projects.statVersions")}</span></li>
             </ul>
-
         </div>
 
         <div class="section-head">
-            <h2>پروژه‌های من</h2>
-            <a class="button" href="#/new">+ پروژه جدید (دیتاست جدید)</a>
+            <h2>${t("projects.title")}</h2>
+            <a class="button" href="#/new">${t("projects.newButton")}</a>
         </div>
 
-        ${
-            projects.length === 0
-            ?
-            `
+        ${projects.length === 0 ? `
             <div class="empty">
                 <div class="empty__icon">▤</div>
-                <h3>هنوز پروژه‌ای ندارید</h3>
-                <p>اولین دیتاست خود را بارگذاری کنید. سیستم آن را تحلیل می‌کند، روش و الگوریتم مناسب را پیشنهاد می‌دهد و نتیجه را در یک داشبورد نگه می‌دارد.</p>
-                <a class="button" href="#/new">بارگذاری اولین دیتاست</a>
-            </div>
-            `
-            :
-            `<div class="project-grid">${projects.map(projectCard).join("")}</div>`
-        }
-
+                <h3>${t("projects.emptyTitle")}</h3>
+                <p>${t("projects.emptyText")}</p>
+                <a class="button" href="#/new">${t("projects.emptyButton")}</a>
+            </div>`
+        : `<div class="project-grid">${projects.map(projectCard).join("")}</div>`}
     `;
 
     view.querySelectorAll("[data-update-project]").forEach(button => {
-
         button.addEventListener("click", () => {
             sessionStorageSet("openUpdate", button.dataset.updateProject);
             location.hash = `#/project/${button.dataset.updateProject}`;
         });
-
     });
 
     view.querySelectorAll("[data-delete-project]").forEach(button => {
-
-        button.addEventListener("click", () =>
-            deleteProject(Number(button.dataset.deleteProject), button.dataset.name)
-        );
-
+        button.addEventListener("click", () => deleteProject(Number(button.dataset.deleteProject), button.dataset.name));
     });
 
 }
@@ -130,18 +91,14 @@ function summaryText(summary){
     }
 
     if(summary.accuracy !== undefined && summary.accuracy !== null){
-        return `دقت مدل: <b>${formatPercent(summary.accuracy)}</b>`;
+        return t("projects.summaryClassification", { f1: formatPercent(summary.macro_f1), acc: formatPercent(summary.accuracy) });
     }
 
     if(summary.cluster_count !== undefined){
-
-        const quality =
-            summary.silhouette_score !== null && summary.silhouette_score !== undefined
-            ? ` · کیفیت تفکیک: <b>${formatNumber(Math.round(summary.silhouette_score * 100) / 100)}</b>`
-            : "";
-
-        return `${formatNumber(summary.cluster_count)} گروه${quality}`;
-
+        return t("projects.summaryClustering", {
+            k: summary.cluster_count,
+            silhouette: summary.silhouette_score === null || summary.silhouette_score === undefined ? "-" : formatNumber(summary.silhouette_score, 2)
+        });
     }
 
     return "";
@@ -151,52 +108,32 @@ function summaryText(summary){
 
 function projectCard(project){
 
-    const ready =
-        project.status === "ready";
-
-    const config =
-        project.config || {};
+    const ready = project.status === "ready";
+    const config = project.config || {};
 
     return `
-
     <article class="project-card">
-
         <div class="project-card__head">
             <h3 dir="auto">${escapeHtml(project.name)}</h3>
-            <span class="badge ${ready ? "badge--ok" : "badge--warn"}">
-                ${ready ? "داشبورد آماده" : "در انتظار تکمیل تنظیمات"}
-            </span>
+            <span class="badge ${ready ? "badge--ok" : "badge--warn"}">${ready ? t("projects.ready") : t("projects.pending")}</span>
         </div>
-
         <ul class="project-card__meta">
-            <li>${ready ? escapeHtml(PROBLEM_LABELS[config.problem_type] || "") : "تحلیل اولیه انجام شده است"}</li>
-            ${ready ? `<li dir="ltr">${escapeHtml(config.algorithm || "")}</li>` : ""}
-            <li>${formatNumber(project.version_count)} نسخه · ${formatNumber(project.total_rows)} ردیف</li>
-            <li>آخرین تغییر: ${formatDate(project.updated_at)}</li>
+            <li>${ready ? escapeHtml(problemLabel(config.problem_type)) : t("projects.analysedOnly")}</li>
+            ${ready ? `<li dir="ltr" class="mono">${escapeHtml(config.algorithm || "")}</li>` : ""}
+            ${ready && config.target_type ? `<li><span class="badge badge--soft">${targetTypeLabel(config.target_type, config.ai_target && config.ai_target.source)}</span></li>` : ""}
+            <li>${t("projects.versionsRows", { versions: project.version_count, rows: project.total_rows })}</li>
+            <li>${t("projects.lastChange", { date: formatDate(project.updated_at) })}</li>
         </ul>
-
         ${ready && project.latest_summary ? `<p class="project-card__metric">${summaryText(project.latest_summary)}</p>` : ""}
-
         <div class="project-card__actions">
-
-            ${
-                ready
-                ?
-                `
-                <a class="button" href="#/project/${project.id}">مشاهده داشبورد</a>
-                <button type="button" class="btn--secondary" data-update-project="${project.id}">افزودن داده جدید</button>
-                `
-                :
-                `<a class="button" href="#/project/${project.id}/setup">ادامه تنظیم تحلیل</a>`
-            }
-
-            <button type="button" class="btn--icon" title="حذف پروژه" aria-label="حذف پروژه"
+            ${ready ? `
+                <a class="button" href="#/project/${project.id}">${t("projects.openDashboard")}</a>
+                <button type="button" class="btn--secondary" data-update-project="${project.id}">${t("projects.addData")}</button>`
+            : `<a class="button" href="#/project/${project.id}/setup">${t("projects.continueSetup")}</a>`}
+            <button type="button" class="btn--icon" title="${t("projects.delete")}" aria-label="${t("projects.delete")}"
                 data-delete-project="${project.id}" data-name="${escapeHtml(project.name)}">🗑</button>
-
         </div>
-
     </article>
-
     `;
 
 }
@@ -204,34 +141,23 @@ function projectCard(project){
 
 async function deleteProject(projectId, name){
 
-    const ok = await confirmDialog(
-        "حذف پروژه",
-        `پروژه «${name}» با همه نسخه‌ها و نتایجش برای همیشه حذف می‌شود. ادامه می‌دهید؟`,
-        "حذف پروژه"
-    );
+    const ok = await confirmDialog(t("projects.deleteTitle"), t("projects.deleteText", { name }), t("projects.delete"));
 
     if(!ok){
         return;
     }
 
-    const result = await withLoading(
-        "در حال حذف پروژه...",
-        () => api(`/api/projects/${projectId}`, { method: "DELETE" })
-    );
+    const result = await withLoading(t("loading.deleting"), () => api(`/api/projects/${projectId}`, { method: "DELETE" }));
 
     if(result){
-
         projectCache.delete(projectId);
-
-        showToast("پروژه حذف شد", "success");
-
+        showToast(t("projects.deleted"), "success");
         if(location.hash === "#/projects"){
             showProjects();
         }
         else {
             location.hash = "#/projects";
         }
-
     }
 
 }
@@ -257,7 +183,7 @@ function showNewProject(){
     setNav("new");
 
     document.getElementById("projectName").value = "";
-    document.getElementById("projectName").placeholder = "مثلاً: تحلیل مشتریان فروشگاه";
+    document.getElementById("projectName").placeholder = t("upload.projectNamePlaceholder");
 
     if(newProjectDropzone){
         newProjectDropzone.reset();
@@ -268,40 +194,28 @@ function showNewProject(){
 
 document.getElementById("analyzeBtn").addEventListener("click", async () => {
 
-    const file =
-        document.getElementById("datasetFile").files[0];
+    const file = document.getElementById("datasetFile").files[0];
 
     if(!file){
-
-        showToast("ابتدا فایل دیتاست را انتخاب کنید", "error");
-
+        showToast(t("upload.chooseFirst"), "error");
         return;
-
     }
 
-    const formData =
-        new FormData();
-
+    const formData = new FormData();
     formData.append("file", file);
     formData.append("name", document.getElementById("projectName").value.trim());
 
-    const data = await withLoading(
-        "در حال بارگذاری و تحلیل دیتاست...",
-        () => api("/api/projects", { form: formData })
-    );
+    const data = await withLoading(t("loading.uploading"), () => api("/api/projects", { form: formData }));
 
     if(!data){
         return;
     }
 
     projectCache.set(data.project.id, data.project);
-
-    showToast("پروژه ساخته شد؛ حالا نوع تحلیل را انتخاب کنید", "success");
-
+    showToast(t("upload.created"), "success");
     location.hash = `#/project/${data.project.id}/setup`;
 
 });
-
 
 
 async function fetchProject(projectId, useCache = false){
@@ -310,11 +224,8 @@ async function fetchProject(projectId, useCache = false){
         return projectCache.get(projectId);
     }
 
-    const data =
-        await api(`/api/projects/${projectId}`);
-
+    const data = await api(`/api/projects/${projectId}`);
     projectCache.set(projectId, data.project);
-
     return data.project;
 
 }
@@ -325,10 +236,9 @@ async function showProjectSetup(projectId){
     showView("wizardView");
     setNav(null);
 
-    wizardContainer().innerHTML = `<p class="hint">در حال بارگذاری پروژه...</p>`;
+    wizardContainer().innerHTML = `<p class="hint">${t("loading.project")}</p>`;
 
     let project;
-
     try {
         project = await fetchProject(projectId, true);
     }
@@ -345,19 +255,15 @@ async function showProjectSetup(projectId){
 }
 
 
-
 async function showProjectDashboard(projectId){
 
     showView("projectView");
     setNav(null);
 
-    const view =
-        document.getElementById("projectView");
-
-    view.innerHTML = `<p class="hint">در حال بارگذاری داشبورد...</p>`;
+    const view = document.getElementById("projectView");
+    view.innerHTML = `<p class="hint">${t("loading.dashboard")}</p>`;
 
     let project;
-
     try {
         project = await fetchProject(projectId, false);
     }
@@ -374,13 +280,11 @@ async function showProjectDashboard(projectId){
         return;
     }
 
+    const keepSelection = projectPage.project && projectPage.project.id === project.id ? projectPage.selectedVersion : null;
     projectPage.project = project;
 
-    const completed =
-        project.versions.filter(v => v.status === "completed");
-
-    projectPage.selectedVersion =
-        completed.length ? completed[completed.length - 1].version_no : null;
+    const completed = project.versions.filter(v => v.status === "completed");
+    projectPage.selectedVersion = keepSelection || (completed.length ? completed[completed.length - 1].version_no : null);
 
     renderProjectDashboard();
 
@@ -392,121 +296,105 @@ async function showProjectDashboard(projectId){
 }
 
 
+function targetLabel(config){
+
+    if(config.problem_type !== "classification"){
+        return null;
+    }
+
+    if(config.target_type === "pseudo" || config.target_mode === "ai"){
+        return config.ai_target && config.ai_target.source === "statistical" ? t("pseudo.labelStatistical") : t("pseudo.labelLLM");
+    }
+
+    return config.target;
+
+}
+
+
 function renderProjectDashboard(){
 
-    const project =
-        projectPage.project;
-
-    const config =
-        project.config || {};
-
-    const view =
-        document.getElementById("projectView");
-
-    const targetLabel =
-        config.problem_type !== "classification"
-        ? null
-        : (config.target_mode === "ai"
-            ? ((config.ai_target && config.ai_target.method === "statistical")
-                ? "Target ساخته‌شده (روش آماری)"
-                : "Target هوشمند (ساخته‌شده با AI)")
-            : config.target);
-
-    const prefs =
-        config.preferences || {};
+    const project = projectPage.project;
+    const config = project.config || {};
+    const view = document.getElementById("projectView");
+    const target = targetLabel(config);
+    const prefs = config.preferences || {};
+    const pseudo = config.ai_target;
 
     view.innerHTML = `
 
-    <a class="back-link" href="#/projects">→ همه پروژه‌ها</a>
+    <a class="back-link" href="#/projects">${t("nav.allProjects")}</a>
 
     <section class="panel project-head">
 
         <div class="project-head__title">
             <h2 id="projectTitle" dir="auto">${escapeHtml(project.name)}</h2>
-            <button type="button" class="btn--ghost btn--small" id="renameBtn">تغییر نام</button>
+            <button type="button" class="btn--ghost btn--small" id="renameBtn">${t("dashboard.rename")}</button>
         </div>
 
         <div class="chips">
-            <span class="chip">${escapeHtml(PROBLEM_LABELS[config.problem_type] || "")}</span>
-            ${targetLabel ? `<span class="chip">نتیجه: <b dir="auto">${escapeHtml(targetLabel)}</b></span>` : ""}
-            <span class="chip">الگوریتم: <b dir="ltr">${escapeHtml(config.algorithm || "")}</b></span>
-            ${prefs.main_goal ? `<span class="chip">هدف: ${GOAL_LABELS[prefs.main_goal] || ""}</span>` : ""}
-            ${prefs.cluster_count ? `<span class="chip">تعداد گروه: ${formatNumber(prefs.cluster_count)}</span>` : ""}
-            <span class="chip">${formatNumber(project.version_count)} نسخه · ${formatNumber(project.total_rows)} ردیف</span>
+            <span class="chip">${escapeHtml(problemLabel(config.problem_type))}</span>
+            ${target ? `<span class="chip">${t("dashboard.target")}: <b dir="auto">${escapeHtml(target)}</b></span>` : ""}
+            ${config.target_type ? `<span class="chip chip--accent">${targetTypeLabel(config.target_type, pseudo && pseudo.source)}</span>` : ""}
+            <span class="chip">${t("dashboard.algorithm")}: <b dir="ltr">${escapeHtml(config.algorithm || "")}</b></span>
+            ${prefs.main_goal ? `<span class="chip">${t("dashboard.goal")}: ${goalLabel(prefs.main_goal)}</span>` : ""}
+            ${prefs.cluster_count ? `<span class="chip">${t("dashboard.clusterCount")}: ${formatNumber(prefs.cluster_count)}</span>` : ""}
+            <span class="chip">${t("projects.versionsRows", { versions: project.version_count, rows: project.total_rows })}</span>
         </div>
 
-        ${
-            config.ai_target
-            ?
-            `<p class="hint">${config.ai_target.method === "statistical" ? "Target" : "Target هوشمند"} از ترکیب ستون‌های ${(config.ai_target.important_features || []).map(escapeHtml).join("، ")} ساخته شده است. ${escapeHtml(config.ai_target.reason || "")}</p>`
-            :
-            ""
-        }
+        ${pseudo ? `<p class="hint">${t("dashboard.pseudoSummary", {
+            source: t(`pseudo.source.${pseudo.source}`),
+            features: (pseudo.usable_features || pseudo.features || []).map(escapeHtml)
+        })} ${escapeHtml(aiReason(pseudo))}</p>` : ""}
 
         <div class="button-row">
-            <button type="button" id="openUpdateBtn">+ افزودن داده جدید به همین دیتاست</button>
-            <a class="button btn--secondary" href="#/project/${project.id}/setup">تغییر تنظیمات تحلیل</a>
-            <button type="button" class="btn--ghost btn--danger-text" id="deleteProjectBtn">حذف پروژه</button>
+            <button type="button" id="openUpdateBtn">${t("dashboard.addData")}</button>
+            <a class="button btn--secondary" href="#/project/${project.id}/setup">${t("dashboard.changeSettings")}</a>
+            <button type="button" class="btn--ghost btn--danger-text" id="deleteProjectBtn">${t("projects.delete")}</button>
         </div>
 
     </section>
 
     <section class="panel">
-
         <div class="section-head section-head--tight">
-            <h2>نسخه‌های داده (شاخه‌ها)</h2>
-            <p class="hint">هر نسخه = داده‌های قبلی + رکوردهای جدید. روی هر نسخه کلیک کنید تا نتیجه کامل آن را ببینید.</p>
+            <h2>${t("versions.title")}</h2>
+            <p class="hint">${t("versions.hint")}</p>
         </div>
-
         <div class="branches" id="branches" role="tablist">
             ${project.versions.map((version, index) => branchNode(version, project.versions[index - 1])).join("")}
         </div>
-
         ${project.versions.length > 1 ? `<div id="versionComparison"></div>` : ""}
-
     </section>
 
     <section id="versionDetail"></section>
 
     <section class="panel next-step">
-
-        <h2>داده جدید دارید؟</h2>
-
+        <h2>${t("dashboard.nextTitle")}</h2>
         <div class="cards cards--2">
-
             <button type="button" class="choice" id="choiceContinue">
                 <span class="choice__icon">⤓</span>
-                <span class="choice__title">ادامه همین دیتاست</span>
-                <span class="choice__text">رکوردهای جدیدِ همین داده (با همین ستون‌ها) را اضافه کنید تا یک نسخه جدید ساخته شود و پیشرفت آن را با نسخه‌های قبلی مقایسه کنید.</span>
+                <span class="choice__title">${t("dashboard.nextContinue")}</span>
+                <span class="choice__text">${t("dashboard.nextContinueText")}</span>
             </button>
-
             <a class="choice" href="#/new">
                 <span class="choice__icon">✚</span>
-                <span class="choice__title">دیتاست کاملاً جدید</span>
-                <span class="choice__text">یک پروژه مستقل جدید با داشبورد جداگانه بسازید؛ هیچ ارتباطی با این پروژه نخواهد داشت.</span>
+                <span class="choice__title">${t("dashboard.nextNew")}</span>
+                <span class="choice__text">${t("dashboard.nextNewText")}</span>
             </a>
-
         </div>
-
     </section>
-
     `;
 
     view.querySelectorAll("[data-version]").forEach(node => {
-
         node.addEventListener("click", () => {
             projectPage.selectedVersion = Number(node.dataset.version);
             renderVersionSelection();
         });
-
     });
 
     document.getElementById("openUpdateBtn").addEventListener("click", openUpdateModal);
     document.getElementById("choiceContinue").addEventListener("click", openUpdateModal);
     document.getElementById("renameBtn").addEventListener("click", startRename);
-    document.getElementById("deleteProjectBtn").addEventListener("click", () =>
-        deleteProject(project.id, project.name)
-    );
+    document.getElementById("deleteProjectBtn").addEventListener("click", () => deleteProject(project.id, project.name));
 
     renderVersionSelection();
 
@@ -519,20 +407,17 @@ function versionMainValue(summary){
         return null;
     }
 
-    if(summary.accuracy !== undefined && summary.accuracy !== null){
-        return { value: summary.accuracy, text: formatPercent(summary.accuracy), label: "دقت" };
+    if(summary.macro_f1 !== undefined && summary.macro_f1 !== null){
+        return { value: summary.macro_f1, text: formatPercent(summary.macro_f1), label: t("metrics.macro_f1"), percent: true };
     }
 
     if(summary.silhouette_score !== undefined && summary.silhouette_score !== null){
-        return {
-            value: summary.silhouette_score,
-            text: formatNumber(Math.round(summary.silhouette_score * 100) / 100),
-            label: `${formatNumber(summary.cluster_count)} گروه · کیفیت`
-        };
+        return { value: summary.silhouette_score, text: formatNumber(summary.silhouette_score, 2),
+                 label: t("versions.clustersQuality", { k: summary.cluster_count }), percent: false };
     }
 
     if(summary.cluster_count !== undefined){
-        return { value: null, text: formatNumber(summary.cluster_count), label: "تعداد گروه" };
+        return { value: null, text: formatNumber(summary.cluster_count), label: t("metrics.cluster_count"), percent: false };
     }
 
     return null;
@@ -542,70 +427,31 @@ function versionMainValue(summary){
 
 function branchNode(version, previous){
 
-    const main =
-        versionMainValue(version.summary);
-
-    const prev =
-        previous ? versionMainValue(previous.summary) : null;
+    const main = versionMainValue(version.summary);
+    const prev = previous ? versionMainValue(previous.summary) : null;
 
     let delta = "";
 
     if(main && prev && main.value !== null && prev.value !== null){
-
-        const diff =
-            main.value - prev.value;
-
-        const isPercent =
-            version.summary.accuracy !== undefined && version.summary.accuracy !== null;
-
-        const shown =
-            isPercent
-            ? formatNumber(Math.round(Math.abs(diff) * 1000) / 10) + "٪"
-            : formatNumber(Math.round(Math.abs(diff) * 100) / 100);
-
-        const roundedZero =
-            isPercent ? Math.round(Math.abs(diff) * 1000) === 0 : Math.round(Math.abs(diff) * 100) === 0;
-
-        if(roundedZero){
-            delta = `<span class="delta delta--flat">بدون تغییر</span>`;
-        }
-        else {
-            delta = `<span class="delta ${diff > 0 ? "delta--up" : "delta--down"}">${diff > 0 ? "▲" : "▼"} ${shown}</span>`;
-        }
-
+        const diff = main.value - prev.value;
+        const zero = main.percent ? Math.round(Math.abs(diff) * 1000) === 0 : Math.round(Math.abs(diff) * 100) === 0;
+        const shown = main.percent ? formatPercent(Math.abs(diff)) : formatNumber(Math.abs(diff), 2);
+        delta = zero
+            ? `<span class="delta delta--flat">${t("versions.noChange")}</span>`
+            : `<span class="delta ${diff > 0 ? "delta--up" : "delta--down"}">${diff > 0 ? "▲" : "▼"} ${shown}</span>`;
     }
 
     return `
-
     <button type="button" class="branch" role="tab" data-version="${version.version_no}">
-
-        <span class="branch__dot">${toFaDigits(version.version_no)}</span>
-
+        <span class="branch__dot">${localizeDigits(version.version_no)}</span>
         <span class="branch__body">
-
-            <span class="branch__title">
-                نسخه ${toFaDigits(version.version_no)}
-                ${version.version_no === 1 ? `<small>(داده اولیه)</small>` : ""}
-            </span>
-
+            <span class="branch__title">${t("versions.version", { n: version.version_no })} ${version.version_no === 1 ? `<small>${t("versions.initial")}</small>` : ""}</span>
             <span class="branch__meta">${formatDate(version.created_at)}</span>
-
-            <span class="branch__meta">
-                ${version.version_no === 1 ? "" : `+${formatNumber(version.rows_added)} ردیف · `}کل ${formatNumber(version.total_rows)} ردیف
-            </span>
-
-            ${
-                main
-                ?
-                `<span class="branch__metric">${main.label}: <b>${main.text}</b> ${delta}</span>`
-                :
-                `<span class="branch__metric">${version.status === "completed" ? "" : "تحلیل نشده"}</span>`
-            }
-
+            <span class="branch__meta">${version.version_no === 1 ? "" : t("versions.added", { rows: version.rows_added }) + " · "}${t("versions.total", { rows: version.total_rows })}</span>
+            ${main ? `<span class="branch__metric">${main.label}: <b>${main.text}</b> ${delta}</span>`
+                   : `<span class="branch__metric">${version.status === "completed" ? "" : t("versions.notAnalysed")}</span>`}
         </span>
-
     </button>
-
     `;
 
 }
@@ -613,24 +459,18 @@ function branchNode(version, previous){
 
 function renderVersionSelection(){
 
-    const project =
-        projectPage.project;
+    const project = projectPage.project;
 
     document.querySelectorAll("[data-version]").forEach(node => {
-
-        const active =
-            Number(node.dataset.version) === projectPage.selectedVersion;
-
+        const active = Number(node.dataset.version) === projectPage.selectedVersion;
         node.classList.toggle("branch--active", active);
         node.setAttribute("aria-selected", active ? "true" : "false");
-
     });
 
-    const version =
-        project.versions.find(v => v.version_no === projectPage.selectedVersion);
+    const version = project.versions.find(v => v.version_no === projectPage.selectedVersion);
+    const detail = document.getElementById("versionDetail");
 
-    const detail =
-        document.getElementById("versionDetail");
+    destroyCharts();
 
     if(!version){
         detail.innerHTML = "";
@@ -638,221 +478,167 @@ function renderVersionSelection(){
         return;
     }
 
-    const isLatest =
-        version.version_no === project.versions[project.versions.length - 1].version_no;
+    const isLatest = version.version_no === project.versions[project.versions.length - 1].version_no;
 
     detail.innerHTML = `
-
         <div class="version-head">
-
             <div>
-                <h2>داشبورد نسخه ${toFaDigits(version.version_no)}${isLatest ? ` <span class="badge badge--primary">آخرین نسخه</span>` : ""}</h2>
+                <h2>${t("versions.dashboardTitle", { n: version.version_no })}${isLatest ? ` <span class="badge badge--primary">${t("versions.latest")}</span>` : ""}</h2>
                 <p class="hint">
-                    فایل: <span dir="auto">${escapeHtml(version.filename)}</span> ·
+                    ${t("versions.file")} <span dir="auto">${escapeHtml(version.filename)}</span> ·
                     ${formatDate(version.created_at)} ·
-                    تحلیل روی ${formatNumber(version.total_rows)} ردیف (نسخه‌های ۱ تا ${toFaDigits(version.version_no)})
+                    ${t("versions.scope", { rows: version.total_rows, n: version.version_no })}
                 </p>
             </div>
-
-            ${
-                isLatest && version.version_no > 1
-                ?
-                `<button type="button" class="btn--ghost btn--small btn--danger-text" id="deleteVersionBtn">حذف این نسخه</button>`
-                :
-                ""
-            }
-
+            <div class="button-row button-row--tight">
+                ${version.status === "completed" ? `
+                    <button type="button" class="btn--secondary btn--small" data-export="json">${t("versions.exportJson")}</button>
+                    <button type="button" class="btn--secondary btn--small" data-export="csv">${t("versions.exportCsv")}</button>` : ""}
+                ${isLatest && version.version_no > 1 ? `<button type="button" class="btn--ghost btn--small btn--danger-text" id="deleteVersionBtn">${t("versions.delete")}</button>` : ""}
+            </div>
         </div>
-
+        ${(version.issues || []).length ? renderIssues(version.issues, t("issues.versionTitle")) : ""}
         <div class="result" id="versionDashboard"></div>
-
     `;
 
-    const deleteBtn =
-        document.getElementById("deleteVersionBtn");
-
+    const deleteBtn = document.getElementById("deleteVersionBtn");
     if(deleteBtn){
         deleteBtn.addEventListener("click", () => deleteVersion(version.version_no));
     }
 
-    const dashboard =
-        document.getElementById("versionDashboard");
+    detail.querySelectorAll("[data-export]").forEach(button => {
+        button.addEventListener("click", () => exportAudit(version.version_no, button.dataset.export));
+    });
+
+    const dashboard = document.getElementById("versionDashboard");
 
     if(version.status !== "completed" || !version.result){
-
-        dashboard.innerHTML = `<div class="error">${escapeHtml(version.error || "این نسخه هنوز تحلیل نشده است")}</div>`;
-
+        const error = version.error && typeof version.error === "object" ? tCode("errors", version.error) : (version.error || t("versions.notAnalysedYet"));
+        dashboard.innerHTML = `<div class="error">${escapeHtml(error)}</div>`;
     }
     else {
-
         renderDashboard(version.result, dashboard);
-
     }
-
 
     renderVersionComparison(project);
 
 }
 
 
+async function exportAudit(versionNo, format){
+
+    const project = projectPage.project;
+    const name = `guidml_project${project.id}_v${versionNo}_audit.${format}`;
+
+    try {
+        await download(`/api/projects/${project.id}/versions/${versionNo}/audit?format=${format}`, name);
+        showToast(t("versions.exported"), "success");
+    }
+    catch(err){
+        showToast(err.message, "error");
+    }
+
+}
+
+
 function renderVersionComparison(project){
 
-    const box =
-        document.getElementById("versionComparison");
+    const box = document.getElementById("versionComparison");
 
     if(!box){
         return;
     }
 
-    const versions =
-        project.versions.filter(v => v.status === "completed" && v.summary);
+    const versions = project.versions.filter(v => v.status === "completed" && v.summary);
+    const isClassification = (project.config || {}).problem_type === "classification";
+    const labels = versions.map(v => t("versions.version", { n: v.version_no }));
 
-    const isClassification =
-        (project.config || {}).problem_type === "classification";
-
-    const labels =
-        versions.map(v => "نسخه " + toFaDigits(v.version_no));
-
-    const rows =
-        versions.map(v => {
-
-            const s = v.summary;
-
-            if(isClassification){
-                return `
-                <tr>
-                    <th>نسخه ${toFaDigits(v.version_no)}</th>
-                    <td>${formatNumber(v.total_rows)}</td>
-                    <td>${formatPercent(s.accuracy)}</td>
-                    <td>${formatPercent(s.precision)}</td>
-                    <td>${formatPercent(s.recall)}</td>
-                    <td>${formatPercent(s.f1)}</td>
-                </tr>`;
-            }
-
-            return `
-                <tr>
-                    <th>نسخه ${toFaDigits(v.version_no)}</th>
-                    <td>${formatNumber(v.total_rows)}</td>
-                    <td>${formatNumber(s.cluster_count)}</td>
-                    <td>${s.silhouette_score === null || s.silhouette_score === undefined ? "-" : formatNumber(Math.round(s.silhouette_score * 100) / 100)}</td>
-                    <td>${formatNumber(s.noise_points)}</td>
-                </tr>`;
-
-        }).join("");
+    const rows = versions.map(v => {
+        const s = v.summary;
+        if(isClassification){
+            return `<tr><th>${t("versions.version", { n: v.version_no })}</th><td>${formatNumber(v.total_rows)}</td>
+                <td>${formatPercent(s.accuracy)}</td><td>${formatPercent(s.balanced_accuracy)}</td><td>${formatPercent(s.macro_f1)}</td>
+                <td>${formatPercent(s.weighted_f1)}</td><td>${s.fixed_holdout_macro_f1 === null || s.fixed_holdout_macro_f1 === undefined ? "-" : formatPercent(s.fixed_holdout_macro_f1)}</td></tr>`;
+        }
+        return `<tr><th>${t("versions.version", { n: v.version_no })}</th><td>${formatNumber(v.total_rows)}</td>
+            <td>${formatNumber(s.cluster_count)}</td><td>${s.silhouette_score === null || s.silhouette_score === undefined ? "-" : formatNumber(s.silhouette_score, 3)}</td>
+            <td>${s.davies_bouldin_index === null || s.davies_bouldin_index === undefined ? "-" : formatNumber(s.davies_bouldin_index, 3)}</td><td>${formatPercent(s.noise_ratio)}</td></tr>`;
+    }).join("");
 
     box.innerHTML = `
-
         <div class="comparison">
-
             <div class="comparison__chart">
-                <h3>روند تغییر نتایج در نسخه‌ها</h3>
+                <h3>${t("versions.trend")}</h3>
                 <div class="chart-box"><canvas id="versionChart"></canvas></div>
             </div>
-
             <div class="comparison__table">
                 <table class="data-table">
-                    <thead>
-                        ${
-                            isClassification
-                            ?
-                            `<tr><th>نسخه</th><th>ردیف‌ها</th><th>دقت کلی</th><th>دقت پیش‌بینی</th><th>شناسایی موارد</th><th>تعادل (F1)</th></tr>`
-                            :
-                            `<tr><th>نسخه</th><th>ردیف‌ها</th><th>تعداد گروه</th><th>کیفیت تفکیک</th><th>داده غیرعادی</th></tr>`
-                        }
+                    <thead>${isClassification
+                        ? `<tr><th>${t("versions.versionCol")}</th><th>${t("versions.rowsCol")}</th><th>${t("metrics.accuracy")}</th><th>${t("metrics.balanced_accuracy")}</th><th>${t("metrics.macro_f1")}</th><th>${t("metrics.weighted_f1")}</th><th>${t("versions.fixedCol")}</th></tr>`
+                        : `<tr><th>${t("versions.versionCol")}</th><th>${t("versions.rowsCol")}</th><th>${t("metrics.cluster_count")}</th><th>${t("metrics.silhouette")}</th><th>${t("metrics.davies_bouldin")}</th><th>${t("metrics.noise_ratio")}</th></tr>`}
                     </thead>
                     <tbody>${rows}</tbody>
                 </table>
+                <p class="hint">${t(isClassification ? "versions.comparisonNote" : "versions.comparisonNoteClustering")}</p>
             </div>
-
         </div>
-
     `;
 
     if(!window.Chart){
         return;
     }
 
-    const canvas =
-        document.getElementById("versionChart");
-
     const line = (label, data, color, extra = {}) => ({
-        label,
-        data,
-        borderColor: color,
-        backgroundColor: color,
-        tension: 0.3,
-        pointRadius: 5,
-        pointHoverRadius: 7,
-        ...extra
+        label, data, borderColor: color, backgroundColor: color, tension: 0.3, pointRadius: 4, pointHoverRadius: 6, ...extra
     });
 
     let datasets;
     let scales;
 
     if(isClassification){
-
         datasets = [
-            line("دقت کلی", versions.map(v => v.summary.accuracy * 100), "#ec4899"),
-            line("دقت پیش‌بینی", versions.map(v => v.summary.precision * 100), "#8b5cf6"),
-            line("شناسایی موارد درست", versions.map(v => v.summary.recall * 100), "#06b6d4"),
-            line("تعادل عملکرد (F1)", versions.map(v => v.summary.f1 * 100), "#f97316")
+            line(t("metrics.accuracy"), versions.map(v => v.summary.accuracy * 100), PALETTE[0]),
+            line(t("metrics.macro_f1"), versions.map(v => v.summary.macro_f1 * 100), PALETTE[1]),
+            line(t("metrics.balanced_accuracy"), versions.map(v => v.summary.balanced_accuracy * 100), PALETTE[2]),
+            line(t("versions.fixedCol"), versions.map(v => v.summary.fixed_holdout_macro_f1 === null ? null : v.summary.fixed_holdout_macro_f1 * 100), PALETTE[3], { borderDash: [6, 4] })
         ];
-
         scales = {
-            y: { grace: "10%", title: { display: true, text: "درصد" } }
+            x: { reverse: isRTL() },
+            y: { grace: "10%", title: { display: true, text: t("dashboard.classification.percent") }, ticks: numberTicks() }
         };
-
     }
     else {
-
         datasets = [
-            line("کیفیت تفکیک گروه‌ها", versions.map(v => v.summary.silhouette_score), "#ec4899", { yAxisID: "y" }),
-            line("تعداد گروه‌ها", versions.map(v => v.summary.cluster_count), "#8b5cf6", { yAxisID: "y1", borderDash: [6, 4] })
+            line(t("metrics.silhouette"), versions.map(v => v.summary.silhouette_score), PALETTE[0], { yAxisID: "y" }),
+            line(t("metrics.cluster_count"), versions.map(v => v.summary.cluster_count), PALETTE[3], { yAxisID: "y1", borderDash: [6, 4] })
         ];
-
         scales = {
-            y: { suggestedMin: 0, suggestedMax: 1, title: { display: true, text: "کیفیت تفکیک" }, position: "left" },
-            y1: { beginAtZero: true, ticks: { precision: 0 }, title: { display: true, text: "تعداد گروه" }, position: "right", grid: { drawOnChartArea: false } }
+            x: { reverse: isRTL() },
+            y: { suggestedMin: 0, suggestedMax: 1, title: { display: true, text: t("metrics.silhouette") }, position: isRTL() ? "right" : "left", ticks: numberTicks() },
+            y1: { beginAtZero: true, ticks: { precision: 0, callback: v => formatNumber(v) }, title: { display: true, text: t("metrics.cluster_count") }, position: isRTL() ? "left" : "right", grid: { drawOnChartArea: false } }
         };
-
     }
 
-    if(versionChartInstance){
-        try { versionChartInstance.destroy(); } catch(err){ /* already destroyed */ }
-    }
-
-    versionChartInstance = new Chart(canvas, {
+    trackChart(new Chart(document.getElementById("versionChart"), {
         type: "line",
         data: { labels, datasets },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            interaction: { mode: "index", intersect: false },
-            plugins: { legend: { position: "bottom" } },
-            scales
-        }
-    });
+        options: { responsive: true, maintainAspectRatio: false, interaction: { mode: "index", intersect: false },
+                   plugins: { legend: legendOptions(), tooltip: tooltipOptions() }, scales }
+    }));
 
 }
 
 
 async function deleteVersion(versionNo){
 
-    const ok = await confirmDialog(
-        "حذف نسخه",
-        `نسخه ${toFaDigits(versionNo)} و رکوردهایی که در آن اضافه شده بود حذف می‌شود. نسخه‌های قبلی دست نمی‌خورند.`,
-        "حذف نسخه"
-    );
+    const ok = await confirmDialog(t("versions.deleteTitle"), t("versions.deleteText", { n: versionNo }), t("versions.delete"));
 
     if(!ok){
         return;
     }
 
-    const data = await withLoading(
-        "در حال حذف نسخه...",
-        () => api(`/api/projects/${projectPage.project.id}/versions/${versionNo}`, { method: "DELETE" })
-    );
+    const data = await withLoading(t("loading.deleting"),
+        () => api(`/api/projects/${projectPage.project.id}/versions/${versionNo}`, { method: "DELETE" }));
 
     if(!data){
         return;
@@ -862,8 +648,7 @@ async function deleteVersion(versionNo){
     projectPage.project = data.project;
     projectPage.selectedVersion = data.project.versions[data.project.versions.length - 1].version_no;
 
-    showToast("نسخه حذف شد", "success");
-
+    showToast(t("versions.deleted"), "success");
     renderProjectDashboard();
 
 }
@@ -871,25 +656,20 @@ async function deleteVersion(versionNo){
 
 function startRename(){
 
-    const title =
-        document.getElementById("projectTitle");
-
-    const current =
-        projectPage.project.name;
+    const title = document.getElementById("projectTitle");
+    const current = projectPage.project.name;
 
     title.outerHTML = `
         <form class="rename" id="renameForm">
-            <input class="input" id="renameInput" maxlength="120" value="${escapeHtml(current)}" aria-label="نام پروژه">
-            <button type="submit" class="btn--small">ذخیره</button>
-            <button type="button" class="btn--ghost btn--small" id="renameCancel">انصراف</button>
+            <input class="input" id="renameInput" maxlength="120" value="${escapeHtml(current)}" aria-label="${t("upload.projectName")}" dir="auto">
+            <button type="submit" class="btn--small">${t("common.save")}</button>
+            <button type="button" class="btn--ghost btn--small" id="renameCancel">${t("common.cancel")}</button>
         </form>
     `;
 
     document.getElementById("renameBtn").hidden = true;
 
-    const input =
-        document.getElementById("renameInput");
-
+    const input = document.getElementById("renameInput");
     input.focus();
     input.select();
 
@@ -899,18 +679,15 @@ function startRename(){
 
         event.preventDefault();
 
-        const name =
-            input.value.trim();
+        const name = input.value.trim();
 
         if(!name){
-            showToast("نام پروژه نمی‌تواند خالی باشد", "error");
+            showToast(t("errors.PROJECT_NAME_EMPTY"), "error");
             return;
         }
 
-        const data = await withLoading(
-            "در حال ذخیره...",
-            () => api(`/api/projects/${projectPage.project.id}`, { method: "PATCH", json: { name } })
-        );
+        const data = await withLoading(t("loading.saving"),
+            () => api(`/api/projects/${projectPage.project.id}`, { method: "PATCH", json: { name } }));
 
         if(data){
             projectCache.set(data.project.id, data.project);
@@ -933,8 +710,7 @@ const updateDropzone = setupDropzone(
 
 function openUpdateModal(){
 
-    const project =
-        projectPage.project;
+    const project = projectPage.project;
 
     if(!project){
         return;
@@ -945,9 +721,8 @@ function openUpdateModal(){
     }
 
     document.getElementById("updateError").textContent = "";
-
     document.getElementById("updateColumns").innerHTML = `
-        فایل جدید باید دقیقاً همین ستون‌ها را داشته باشد (ترتیب مهم نیست):
+        ${t("update.columns")}
         <div class="chips chips--small">${project.columns.map(c => `<span class="chip" dir="auto">${escapeHtml(c)}</span>`).join("")}</div>
     `;
 
@@ -958,33 +733,23 @@ function openUpdateModal(){
 
 document.getElementById("updateSubmitBtn").addEventListener("click", async () => {
 
-    const file =
-        document.getElementById("updateFile").files[0];
-
-    const errorBox =
-        document.getElementById("updateError");
+    const file = document.getElementById("updateFile").files[0];
+    const errorBox = document.getElementById("updateError");
 
     if(!file){
-        errorBox.textContent = "ابتدا فایل داده‌های جدید را انتخاب کنید";
+        errorBox.textContent = t("update.chooseFirst");
         return;
     }
 
-    const formData =
-        new FormData();
-
+    const formData = new FormData();
     formData.append("file", file);
 
-    const projectId =
-        projectPage.project.id;
+    const projectId = projectPage.project.id;
 
-    showLoading("در حال افزودن داده‌های جدید و تحلیل نسخه جدید...");
+    showLoading(t("loading.addingVersion"));
 
     try {
-
-        const data = await api(
-            `/api/projects/${projectId}/versions`,
-            { form: formData }
-        );
+        const data = await api(`/api/projects/${projectId}/versions`, { form: formData });
 
         closeModal("updateModal");
 
@@ -994,22 +759,17 @@ document.getElementById("updateSubmitBtn").addEventListener("click", async () =>
 
         renderProjectDashboard();
 
-        showToast(`نسخه ${toFaDigits(data.version_no)} ساخته و تحلیل شد`, "success");
+        showToast(t("update.done", { n: data.version_no }), "success");
 
         document.getElementById("versionDetail").scrollIntoView({ behavior: "smooth" });
-
     }
     catch(err){
-
         if(err.status !== 401){
             errorBox.textContent = err.message;
         }
-
     }
     finally {
-
         hideLoading();
-
     }
 
 });

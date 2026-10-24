@@ -15,6 +15,28 @@ const API_BASE = (() => {
 
 const TOKEN_KEY = "automl_token";
 
+async function download(path, filename) {
+
+    const response = await fetch(API_BASE + path, { headers: session.token ? { Authorization: "Bearer " + session.token } : {} });
+
+    if (!response.ok) {
+        let data = null;
+        try { data = await response.json(); } catch (err) { data = null; }
+        throw new ApiError(extractErrorMessage(data, response.status), response.status);
+    }
+
+    const blob = await response.blob();
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = filename;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+
+}
+
 
 const session = {
 
@@ -37,7 +59,7 @@ const session = {
         try {
             localStorage.setItem(TOKEN_KEY, token);
         } catch (err) {
-            /* storage unavailable: keep the session in memory only */
+
         }
     },
 
@@ -47,7 +69,7 @@ const session = {
         try {
             localStorage.removeItem(TOKEN_KEY);
         } catch (err) {
-            /* ignore */
+
         }
     }
 
@@ -56,37 +78,40 @@ const session = {
 
 class ApiError extends Error {
 
-    constructor(message, status) {
+    constructor(message, status, code, params) {
         super(message);
         this.status = status;
+        this.code = code || null;
+        this.params = params || {};
     }
 
 }
 
 
-function extractErrorMessage(body, status) {
 
-    if (body) {
+function parseError(body, status) {
 
-        if (typeof body.detail === "string") {
-            return body.detail;
-        }
+    const detail = body && body.detail;
 
-        if (Array.isArray(body.detail) && body.detail.length) {
-            return "اطلاعات ارسال‌شده کامل نیست";
-        }
+    if (detail && typeof detail === "object" && !Array.isArray(detail) && detail.code) {
+        return { code: detail.code, params: detail.params || {}, message: tCode("errors", detail, detail.message) };
+    }
 
-        if (body.error) {
-            return body.error.message || body.error;
-        }
+    if (typeof detail === "string") {
+        return { code: null, params: {}, message: detail };
     }
 
     if (status >= 500) {
-        return "خطای داخلی سرور؛ دوباره تلاش کنید";
+        return { code: "INTERNAL_ERROR", params: {}, message: t("errors.INTERNAL_ERROR") };
     }
 
-    return "درخواست با خطا مواجه شد";
+    return { code: "HTTP_ERROR", params: {}, message: t("errors.HTTP_ERROR") };
 
+}
+
+
+function extractErrorMessage(body, status) {
+    return parseError(body, status).message;
 }
 
 
@@ -118,10 +143,7 @@ async function api(path, options = {}) {
         response = await fetch(API_BASE + path, { method, headers, body });
     }
     catch (err) {
-        throw new ApiError(
-            "ارتباط با سرور برقرار نشد. مطمئن شوید برنامه سمت سرور در حال اجراست.",
-            0
-        );
+        throw new ApiError(t("errors.NETWORK_ERROR"), 0, "NETWORK_ERROR");
     }
 
     let data = null;
@@ -134,14 +156,16 @@ async function api(path, options = {}) {
     }
 
     if (response.status === 401 && session.token && !options.skipAuthRedirect) {
+        const error = parseError(data, 401);
         session.clear();
-        showToast(extractErrorMessage(data, 401), "error");
+        showToast(error.message, "error");
         location.hash = "#/login";
-        throw new ApiError(extractErrorMessage(data, 401), 401);
+        throw new ApiError(error.message, 401, error.code, error.params);
     }
 
     if (!response.ok) {
-        throw new ApiError(extractErrorMessage(data, response.status), response.status);
+        const error = parseError(data, response.status);
+        throw new ApiError(error.message, response.status, error.code, error.params);
     }
 
     return data;
@@ -159,7 +183,7 @@ async function withLoading(text, task) {
     }
     catch (err) {
         if (err.status !== 401) {
-            showToast(err.message || "خطایی رخ داد", "error");
+            showToast(err.message || t("errors.INTERNAL_ERROR"), "error");
         }
         return null;
     }

@@ -60,6 +60,10 @@ async function route(){
 
     try {
         user = await ensureUser();
+
+        if(user && user.locale && user.locale !== i18n.locale){
+            await setLocale(user.locale, { persist: false, rerender: false });
+        }
     }
     catch(err){
 
@@ -134,6 +138,30 @@ async function route(){
 window.addEventListener("hashchange", route);
 
 
-session.load();
+function rerenderCurrentView(){
 
-route();
+    const wizardVisible = !document.getElementById("wizardView").hidden;
+
+    if(wizardVisible && typeof wizard !== "undefined" && wizard.history.length){
+        if(wizard.project){
+            refreshWizardHeader(wizard.project);
+        }
+        wizard.history[wizard.history.length - 1]();
+        refreshStepNumbers();
+        return;
+    }
+
+    route();
+
+}
+
+
+(async () => {
+
+    await initI18n();
+
+    session.load();
+
+    route();
+
+})();

@@ -89,7 +89,7 @@ async function submitAuthForm(event, kind){
         };
 
         if(!payload.email || !payload.password){
-            errorBox.textContent = "ایمیل و رمز عبور را وارد کنید";
+            errorBox.textContent = t("auth.errors.missingCredentials");
             return;
         }
 
@@ -103,17 +103,17 @@ async function submitAuthForm(event, kind){
         };
 
         if(payload.name.length < 2){
-            errorBox.textContent = "نام خود را وارد کنید";
+            errorBox.textContent = t("errors.AUTH_NAME_TOO_SHORT");
             return;
         }
 
         if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(payload.email)){
-            errorBox.textContent = "ایمیل وارد شده معتبر نیست";
+            errorBox.textContent = t("errors.AUTH_INVALID_EMAIL");
             return;
         }
 
         if(payload.password.length < 6){
-            errorBox.textContent = "رمز عبور باید حداقل ۶ کاراکتر باشد";
+            errorBox.textContent = t("errors.AUTH_PASSWORD_TOO_SHORT");
             return;
         }
 
@@ -134,10 +134,17 @@ async function submitAuthForm(event, kind){
         session.save(data.token, data.user);
         setUser(data.user);
 
+        if(data.user.locale && data.user.locale !== i18n.locale){
+            await setLocale(data.user.locale, { persist: false, rerender: false });
+        }
+        else if(!data.user.locale){
+            setLocale(i18n.locale, { persist: true, rerender: false });
+        }
+
         event.target.reset();
 
         showToast(
-            kind === "login" ? `خوش آمدید، ${data.user.name}` : "حساب شما ساخته شد",
+            kind === "login" ? t("auth.welcome", { name: data.user.name }) : t("auth.created"),
             "success"
         );
 

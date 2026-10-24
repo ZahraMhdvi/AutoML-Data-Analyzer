@@ -1,156 +1,65 @@
-const problemExplanations = {
-
-
-    classification: {
-
-        title:
-            "پیش‌بینی یک نتیجه مشخص",
-
-
-        description:
-
-            "در این روش، سیستم با استفاده از داده‌های قبلی الگوها را یاد می‌گیرد و برای داده‌های جدید یک نتیجه مشخص پیش‌بینی می‌کند.",
-
-
-
-        examples: [
-
-            "پیش‌بینی احتمال بازگشت مشتری",
-
-            "تشخیص خرید یا عدم خرید",
-
-            "تشخیص وضعیت یا دسته یک داده جدید"
-
-        ]
-
-    },
-
-
-
-    clustering: {
-
-
-        title:
-
-            "پیدا کردن گروه‌های مشابه",
-
-
-
-        description:
-
-            "در این روش، سیستم بدون داشتن پاسخ مشخص از قبل، داده‌ها را بررسی می‌کند و موارد مشابه را بر اساس ویژگی‌های مشترک در گروه‌های مختلف قرار می‌دهد.",
-
-
-
-        examples: [
-
-            "تقسیم مشتریان بر اساس رفتار خرید",
-
-            "شناخت گروه‌های مشابه کاربران",
-
-            "کشف الگوهای پنهان در داده‌ها"
-
-        ]
-
-    }
-
-
-};
-
-
-
-
 
 function getProblemExplanation(type){
 
-
-    if(!type)
+    if(!type){
         return null;
+    }
 
+    const key = type.toLowerCase();
 
-
-    return problemExplanations[
-        type.toLowerCase()
-    ];
-
-}
-
-
-
-
-
-
-
-function getScoreText(score){
-
-
-    if(score >= 80)
-
-        return "بسیار مناسب";
-
-
-
-    if(score >= 60)
-
-        return "مناسب";
-
-
-
-    if(score >= 40)
-
-        return "قابل بررسی";
-
-
-
-    return "نیاز به بررسی بیشتر";
+    return {
+        title: t(`problem.${key}.title`),
+        description: t(`problem.${key}.description`),
+        examples: t(`problem.${key}.examples`)
+    };
 
 }
 
 
+function statusLabel(status){
+    return t(`problem.status.${status}`);
+}
 
 
+function statusBadgeClass(status){
+    return {
+        recommended: "badge--ok",
+        potentially_suitable: "badge--warn",
+        not_suitable: "badge--danger"
+    }[status] || "badge--soft";
+}
 
 
 function getMetricExplanation(metric){
+    return has(`metrics.help.${metric}`) ? t(`metrics.help.${metric}`) : t("metrics.help.none");
+}
 
 
-    const explanations = {
+function getSilhouetteText(score){
+
+    if(score >= 0.7) return t("clustering.quality.excellent");
+    if(score >= 0.5) return t("clustering.quality.good");
+    if(score >= 0.25) return t("clustering.quality.fair");
+    if(score >= 0) return t("clustering.quality.weak");
+    return t("clustering.quality.poor");
+
+}
 
 
-        accuracy:
-
-            "نشان می‌دهد مدل در مجموع چند درصد از پیش‌بینی‌ها را درست انجام داده است.",
-
-
-
-        precision:
-
-            "نشان می‌دهد از بین مواردی که مدل یک نتیجه را اعلام کرده، چند مورد درست بوده است.",
+function classLabel(label){
+    const key = `targetClass.${String(label).replace(/\s+/g, "")}`;
+    return has(key) ? t(key) : String(label);
+}
 
 
-
-        recall:
-
-            "نشان می‌دهد مدل چند درصد از موارد واقعی را توانسته پیدا کند.",
-
+function capabilityLabel(code){
+    return has(`capability.${code}`) ? t(`capability.${code}`) : code;
+}
 
 
-        f1:
-
-            "تعادلی بین دقت پیش‌بینی و پیدا کردن موارد واقعی است.",
-
-
-
-        silhouette:
-
-            "نشان می‌دهد گروه‌های ساخته‌شده چقدر از هم جدا و قابل تشخیص هستند."
-
-    };
-
-
-
-    return explanations[metric]
-        ||
-        "اطلاعاتی درباره این معیار موجود نیست.";
-
+function targetTypeLabel(type, source){
+    if(type === "pseudo" && (source === "llm" || source === "statistical")){
+        return t(`targetType.pseudo_${source}`);
+    }
+    return t(`targetType.${type}`);
 }

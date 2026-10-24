@@ -1,186 +1,168 @@
 <!DOCTYPE html>
-<html lang="fa" dir="rtl">
+<html lang="en" dir="ltr">
 
 <head>
-
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-
-    <title>تحلیل هوشمند داده</title>
-
-    <link rel="icon" type="image/png" href="assets/logo.svg">
+    <title>GuidML</title>
+    <link rel="icon" type="image/svg+xml" href="assets/logo.svg">
     <link rel="stylesheet" href="CSS/style.css">
-
 </head>
-
 
 <body>
 
 <header class="app-header">
     <div class="app-header__inner">
         <a class="brand" href="#/projects">
-            <div class="brand__icon">
-                <img src="assets/logo.svg" alt="AI">
-            </div>
-            <div class="brand__text">
-                <h1>تحلیل هوشمند داده</h1>
-                <p>AutoML Data Analyzer</p>
-            </div>
+            <span class="brand__icon"><img src="assets/logo.svg" alt=""></span>
+            <span class="brand__text">
+                <span class="brand__name">GuidML</span>
+                <span class="brand__tag" data-i18n="app.tagline"></span>
+            </span>
         </a>
 
-        <nav class="app-nav" id="appNav" hidden>
-            <a class="app-nav__link" href="#/projects" data-nav="projects">پروژه‌های من</a>
-            <a class="app-nav__link app-nav__link--cta" href="#/new" data-nav="new">+ پروژه جدید</a>
-            <div class="user-chip">
-                <span class="user-chip__avatar" id="userAvatar"></span>
-                <span class="user-chip__name" id="userName"></span>
-                <button class="btn--ghost btn--small" id="logoutBtn" type="button">خروج</button>
+        <div class="header-tools">
+            <nav class="app-nav" id="appNav" hidden>
+                <a class="app-nav__link" href="#/projects" data-nav="projects" data-i18n="nav.projects"></a>
+                <a class="app-nav__link app-nav__link--cta" href="#/new" data-nav="new" data-i18n="nav.newProject"></a>
+                <div class="user-chip">
+                    <span class="user-chip__avatar" id="userAvatar"></span>
+                    <span class="user-chip__name" id="userName"></span>
+                    <button class="btn--ghost btn--small" id="logoutBtn" type="button" data-i18n="nav.logout"></button>
+                </div>
+            </nav>
+
+            <div class="lang-switch" role="group" data-i18n-aria="nav.language">
+                <button type="button" class="lang-switch__btn" data-locale-option="en-US">EN</button>
+                <button type="button" class="lang-switch__btn" data-locale-option="fa-IR">فا</button>
             </div>
-        </nav>
+        </div>
     </div>
 </header>
 
 <main class="container">
 
-
     <section class="view" id="authView" hidden>
         <div class="auth">
             <div class="auth__intro">
-                <h2>داده‌هایتان را بدون دانش برنامه‌نویسی تحلیل کنید</h2>
-                <p>فایل اکسل را بارگذاری کنید؛ سیستم مناسب‌ترین روش و الگوریتم را پیشنهاد می‌دهد، نتیجه را در داشبورد نشان می‌دهد و تاریخچه تمام تحلیل‌هایتان را نگه می‌دارد.</p>
+                <span class="eyebrow" data-i18n="auth.eyebrow"></span>
+                <h2 data-i18n="auth.headline"></h2>
+                <p data-i18n="auth.intro"></p>
                 <ul class="auth__features">
-                    <li>پیشنهاد خودکار نوع تحلیل و الگوریتم</li>
-                    <li>داشبورد ساده و قابل فهم</li>
-                    <li>افزودن داده‌های جدید و مقایسه نسخه‌ها</li>
+                    <li data-i18n="auth.feature1"></li>
+                    <li data-i18n="auth.feature2"></li>
+                    <li data-i18n="auth.feature3"></li>
+                    <li data-i18n="auth.feature4"></li>
                 </ul>
             </div>
 
             <div class="panel auth__card">
                 <div class="tabs" role="tablist">
-                    <button class="tabs__tab" type="button" data-auth-tab="login" role="tab">ورود</button>
-                    <button class="tabs__tab" type="button" data-auth-tab="signup" role="tab">ثبت‌نام</button>
+                    <button class="tabs__tab" type="button" data-auth-tab="login" role="tab" data-i18n="auth.login"></button>
+                    <button class="tabs__tab" type="button" data-auth-tab="signup" role="tab" data-i18n="auth.signup"></button>
                 </div>
 
                 <form id="loginForm" class="form" novalidate>
                     <div class="field">
-                        <label class="field__label" for="loginEmail">ایمیل</label>
+                        <label class="field__label" for="loginEmail" data-i18n="auth.email"></label>
                         <input class="input" type="email" id="loginEmail" autocomplete="email" dir="ltr" required>
                     </div>
                     <div class="field">
-                        <label class="field__label" for="loginPassword">رمز عبور</label>
+                        <label class="field__label" for="loginPassword" data-i18n="auth.password"></label>
                         <input class="input" type="password" id="loginPassword" autocomplete="current-password" dir="ltr" required>
                     </div>
                     <p class="form__error" id="loginError" role="alert"></p>
-                    <button class="btn--block" type="submit">ورود به حساب</button>
-                    <p class="form__hint">حساب ندارید؟ <a href="#/signup">ثبت‌نام کنید</a></p>
+                    <button class="btn--block" type="submit" data-i18n="auth.loginSubmit"></button>
+                    <p class="form__hint"><span data-i18n="auth.noAccount"></span> <a href="#/signup" data-i18n="auth.signupLink"></a></p>
                 </form>
 
                 <form id="signupForm" class="form" novalidate hidden>
                     <div class="field">
-                        <label class="field__label" for="signupName">نام</label>
+                        <label class="field__label" for="signupName" data-i18n="auth.name"></label>
                         <input class="input" type="text" id="signupName" autocomplete="name" required>
                     </div>
                     <div class="field">
-                        <label class="field__label" for="signupEmail">ایمیل</label>
+                        <label class="field__label" for="signupEmail" data-i18n="auth.email"></label>
                         <input class="input" type="email" id="signupEmail" autocomplete="email" dir="ltr" required>
                     </div>
                     <div class="field">
-                        <label class="field__label" for="signupPassword">رمز عبور <small>(حداقل ۶ کاراکتر)</small></label>
+                        <label class="field__label" for="signupPassword"><span data-i18n="auth.password"></span> <small data-i18n="auth.passwordHint"></small></label>
                         <input class="input" type="password" id="signupPassword" autocomplete="new-password" dir="ltr" required minlength="6">
                     </div>
                     <p class="form__error" id="signupError" role="alert"></p>
-                    <button class="btn--block" type="submit">ساخت حساب</button>
-                    <p class="form__hint">قبلاً ثبت‌نام کرده‌اید؟ <a href="#/login">وارد شوید</a></p>
+                    <button class="btn--block" type="submit" data-i18n="auth.signupSubmit"></button>
+                    <p class="form__hint"><span data-i18n="auth.haveAccount"></span> <a href="#/login" data-i18n="auth.loginLink"></a></p>
                 </form>
             </div>
         </div>
     </section>
 
-
     <section class="view" id="projectsView" hidden></section>
 
-
     <section class="view" id="newProjectView" hidden>
-
-        <a class="back-link" href="#/projects">→ بازگشت به پروژه‌ها</a>
-
+        <a class="back-link" href="#/projects" data-i18n="nav.backToProjects"></a>
         <section class="panel" id="uploadPanel">
-
-            <h2 class="panel__title">پروژه جدید: دیتاست خود را بارگذاری کنید</h2>
-            <p class="panel__subtitle">هر پروژه یک دیتاست مستقل با داشبورد و تاریخچه مخصوص خودش است. فایل اکسل (xlsx.) یا CSV را انتخاب یا رها کنید.</p>
-
+            <h2 class="panel__title" data-i18n="upload.title"></h2>
+            <p class="panel__subtitle" data-i18n="upload.subtitle"></p>
             <div class="field">
-                <label class="field__label" for="projectName">نام پروژه <small>(اختیاری)</small></label>
-                <input class="input" type="text" id="projectName" placeholder="مثلاً: تحلیل مشتریان فروشگاه" maxlength="120">
+                <label class="field__label" for="projectName"><span data-i18n="upload.projectName"></span> <small data-i18n="common.optional"></small></label>
+                <input class="input" type="text" id="projectName" data-i18n-placeholder="upload.projectNamePlaceholder" maxlength="120">
             </div>
-
-            <div class="dropzone" id="dropzone" tabindex="0" role="button" aria-label="انتخاب فایل دیتاست">
-                <div class="dropzone__icon">⇪</div>
-                <p class="dropzone__text">فایل را اینجا رها کنید یا کلیک کنید</p>
+            <div class="dropzone" id="dropzone" tabindex="0" role="button" data-i18n-aria="upload.chooseFile">
+                <div class="dropzone__icon" aria-hidden="true">⇪</div>
+                <p class="dropzone__text" data-i18n="upload.dropText"></p>
+                <p class="dropzone__formats" data-i18n="upload.formats"></p>
                 <p class="dropzone__filename" id="fileNameLabel"></p>
                 <input type="file" id="datasetFile" accept=".xlsx,.csv" hidden>
             </div>
-
-            <button id="analyzeBtn" class="btn--block" type="button">
-                ساخت پروژه و تحلیل دیتاست
-            </button>
-
+            <button id="analyzeBtn" class="btn--block" type="button" data-i18n="upload.submit"></button>
         </section>
     </section>
 
-
     <section class="view" id="wizardView" hidden>
-
         <div class="wizard-bar">
-            <a class="back-link" id="wizardProjectLink" href="#/projects">→ بازگشت</a>
+            <a class="back-link" id="wizardProjectLink" href="#/projects"></a>
             <span class="wizard-bar__title" id="wizardTitle"></span>
         </div>
-
         <div class="notice" id="wizardNotice" hidden></div>
-
         <ol class="stepper" id="stepper">
-            <li class="step" data-step="upload"><span class="step__dot">۱</span><span class="step__label">بارگذاری</span></li>
-            <li class="step" data-step="problem"><span class="step__dot">۲</span><span class="step__label">نوع مسئله</span></li>
-            <li class="step" data-step="target"><span class="step__dot">۳</span><span class="step__label">Target</span></li>
-            <li class="step" data-step="preferences"><span class="step__dot">۴</span><span class="step__label">تنظیمات</span></li>
-            <li class="step" data-step="model"><span class="step__dot">۵</span><span class="step__label">مدل</span></li>
-            <li class="step" data-step="results"><span class="step__dot">۶</span><span class="step__label">نتایج</span></li>
+            <li class="step" data-step="upload"><span class="step__dot"></span><span class="step__label" data-i18n="steps.upload"></span></li>
+            <li class="step" data-step="problem"><span class="step__dot"></span><span class="step__label" data-i18n="steps.problem"></span></li>
+            <li class="step" data-step="target"><span class="step__dot"></span><span class="step__label" data-i18n="steps.target"></span></li>
+            <li class="step" data-step="preferences"><span class="step__dot"></span><span class="step__label" data-i18n="steps.preferences"></span></li>
+            <li class="step" data-step="model"><span class="step__dot"></span><span class="step__label" data-i18n="steps.model"></span></li>
+            <li class="step" data-step="results"><span class="step__dot"></span><span class="step__label" data-i18n="steps.results"></span></li>
         </ol>
-
         <div class="wizard-actions">
-            <button class="btn--ghost btn--small" id="wizardBackBtn" type="button" hidden>→ مرحله قبل</button>
+            <button class="btn--ghost btn--small" id="wizardBackBtn" type="button" hidden data-i18n="wizard.previous"></button>
         </div>
-
         <div id="result" class="result"></div>
     </section>
-
 
     <section class="view" id="projectView" hidden></section>
 
 </main>
 
-
 <div class="modal" id="updateModal" hidden>
     <div class="modal__backdrop" data-close-modal></div>
     <div class="modal__dialog" role="dialog" aria-modal="true" aria-labelledby="updateModalTitle">
-        <button class="modal__close" type="button" data-close-modal aria-label="بستن">×</button>
-        <h3 id="updateModalTitle">افزودن داده جدید به همین دیتاست</h3>
-        <p>رکوردهای جدید به داده‌های قبلی اضافه می‌شوند و تحلیل با همان تنظیمات قبلی روی کل داده‌ها تکرار می‌شود. نتیجه به‌صورت یک نسخه (شاخه) جدید در داشبورد ذخیره می‌شود.</p>
+        <button class="modal__close" type="button" data-close-modal data-i18n-aria="common.close">×</button>
+        <h3 id="updateModalTitle" data-i18n="update.title"></h3>
+        <p data-i18n="update.text"></p>
         <div class="notice notice--soft" id="updateColumns"></div>
-        <div class="dropzone dropzone--compact" id="updateDropzone" tabindex="0" role="button" aria-label="انتخاب فایل داده جدید">
-            <div class="dropzone__icon">⇪</div>
-            <p class="dropzone__text">فایل داده‌های جدید را اینجا رها کنید یا کلیک کنید</p>
+        <div class="dropzone dropzone--compact" id="updateDropzone" tabindex="0" role="button" data-i18n-aria="update.chooseFile">
+            <div class="dropzone__icon" aria-hidden="true">⇪</div>
+            <p class="dropzone__text" data-i18n="update.dropText"></p>
             <p class="dropzone__filename" id="updateFileName"></p>
             <input type="file" id="updateFile" accept=".xlsx,.csv" hidden>
         </div>
         <p class="form__error" id="updateError" role="alert"></p>
         <div class="modal__actions">
-            <button type="button" id="updateSubmitBtn">افزودن و تحلیل نسخه جدید</button>
-            <button type="button" class="btn--ghost" data-close-modal>انصراف</button>
+            <button type="button" id="updateSubmitBtn" data-i18n="update.submit"></button>
+            <button type="button" class="btn--ghost" data-close-modal data-i18n="common.cancel"></button>
         </div>
     </div>
 </div>
-
 
 <div class="modal" id="confirmModal" hidden>
     <div class="modal__backdrop" data-close-modal></div>
@@ -188,20 +170,21 @@
         <h3 id="confirmTitle"></h3>
         <p id="confirmText"></p>
         <div class="modal__actions">
-            <button type="button" class="btn--danger" id="confirmOk">تایید</button>
-            <button type="button" class="btn--ghost" data-close-modal>انصراف</button>
+            <button type="button" class="btn--danger" id="confirmOk"></button>
+            <button type="button" class="btn--ghost" data-close-modal data-i18n="common.cancel"></button>
         </div>
     </div>
 </div>
 
 <div class="loading-overlay" id="loadingOverlay">
     <div class="spinner"></div>
-    <p class="loading-overlay__text" id="loadingText">در حال پردازش...</p>
+    <p class="loading-overlay__text" id="loadingText"></p>
 </div>
 
 <div class="toast-container" id="toastContainer"></div>
 
 <script src="vendor/chart.umd.min.js"></script>
+<script src="js/i18n.js"></script>
 <script src="js/api.js"></script>
 <script src="js/ui.js"></script>
 <script src="js/dashboard.js"></script>
@@ -215,5 +198,4 @@
 <script src="js/router.js"></script>
 
 </body>
-
 </html>
