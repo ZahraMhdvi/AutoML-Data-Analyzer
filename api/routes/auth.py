@@ -1,7 +1,9 @@
 import re
 import sqlite3
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends
+
+from ml_engine.errors import AppError
 from pydantic import BaseModel
 
 from api.core.auth import (
@@ -37,7 +39,15 @@ def _public_user(user):
         "name": user["name"],
         "email": user["email"],
         "created_at": user["created_at"],
+        "locale": (user["locale"] if "locale" in (user.keys() if hasattr(user, "keys") else []) else None),
     }
+
+
+SUPPORTED_LOCALES = ("en-US", "fa-IR")
+
+
+class PreferencesRequest(BaseModel):
+    locale: str
 
 
 @router.post("/signup")
@@ -47,13 +57,13 @@ def signup(body: SignupRequest):
     email = body.email.strip().lower()
 
     if len(name) < 2:
-        raise HTTPException(400, "نام باید حداقل ۲ حرف باشد")
+        raise AppError("AUTH_NAME_TOO_SHORT")
 
     if not EMAIL_PATTERN.match(email):
-        raise HTTPException(400, "ایمیل وارد شده معتبر نیست")
+        raise AppError("AUTH_INVALID_EMAIL")
 
     if len(body.password) < 6:
-        raise HTTPException(400, "رمز عبور باید حداقل ۶ کاراکتر باشد")
+        raise AppError("AUTH_PASSWORD_TOO_SHORT")
 
     try:
         with connect() as conn:
@@ -65,7 +75,7 @@ def signup(body: SignupRequest):
             user = conn.execute("SELECT * FROM users WHERE id = ?", (user_id,)).fetchone()
 
     except sqlite3.IntegrityError:
-        raise HTTPException(409, "با این ایمیل قبلاً حساب ساخته شده است؛ وارد شوید")
+        raise AppError("AUTH_EMAIL_EXISTS", status=409)
 
     return {
         "token": create_session(user_id),
@@ -82,7 +92,7 @@ def login(body: LoginRequest):
         user = conn.execute("SELECT * FROM users WHERE email = ?", (email,)).fetchone()
 
     if user is None or not verify_password(body.password, user["password_hash"]):
-        raise HTTPException(401, "ایمیل یا رمز عبور اشتباه است")
+        raise AppError("AUTH_INVALID_CREDENTIALS", status=401)
 
     return {
         "token": create_session(user["id"]),
@@ -102,3 +112,13 @@ def logout(user=Depends(get_current_user)):
 def me(user=Depends(get_current_user)):
 
     return {"user": _public_user(user)}
+
+
+@router.patch("/me/preferences")
+def update_preferences(body: PreferencesRequest, user=Depends(get_current_user)):
+
+    locale = body.locale if body.locale in SUPPORTED_LOCALES else "en-US"
+    with connect() as conn:
+        conn.execute("UPDATE users SET locale = ? WHERE id = ?", (locale, user["id"]))
+        row = conn.execute("SELECT * FROM users WHERE id = ?", (user["id"],)).fetchone()
+    return {"user": _public_user(row)}

@@ -62,7 +62,25 @@ CREATE TABLE IF NOT EXISTS versions (
     UNIQUE(project_id, version_no)
 );
 
+CREATE TABLE IF NOT EXISTS llm_calls (
+    id              INTEGER PRIMARY KEY AUTOINCREMENT,
+    request_id      TEXT    NOT NULL,
+    user_id         INTEGER,
+    project_id      INTEGER,
+    requested_method TEXT,
+    actual_method   TEXT,
+    requested_model TEXT,
+    successful_model TEXT,
+    fallback_used   INTEGER NOT NULL DEFAULT 0,
+    fallback_reason TEXT,
+    latency_ms      REAL,
+    status          TEXT    NOT NULL,
+    record_json     TEXT,
+    created_at      TEXT    NOT NULL
+);
+
 CREATE INDEX IF NOT EXISTS idx_projects_user ON projects(user_id);
+CREATE INDEX IF NOT EXISTS idx_llm_calls_project ON llm_calls(project_id);
 CREATE INDEX IF NOT EXISTS idx_versions_project ON versions(project_id);
 """
 
@@ -77,6 +95,23 @@ def init_db():
 
     with connect() as conn:
         conn.executescript(SCHEMA)
+        _migrate(conn)
+
+
+MIGRATIONS = {
+    "projects": {"column_kinds_json": "TEXT"},
+    "users": {"locale": "TEXT"},
+    "versions": {"issues_json": "TEXT"},
+}
+
+
+def _migrate(conn):
+
+    for table, columns in MIGRATIONS.items():
+        existing = {row["name"] for row in conn.execute(f"PRAGMA table_info({table})")}
+        for column, kind in columns.items():
+            if column not in existing:
+                conn.execute(f"ALTER TABLE {table} ADD COLUMN {column} {kind}")
 
 
 @contextmanager

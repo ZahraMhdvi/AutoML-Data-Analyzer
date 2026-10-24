@@ -10,7 +10,10 @@ ALLOWED_EXTENSIONS = (".xlsx", ".csv")
 MAX_UPLOAD_BYTES = 50 * 1024 * 1024
 
 
-class DatasetFileError(ValueError):
+from ml_engine.errors import AppError
+
+
+class DatasetFileError(AppError):
     pass
 
 
@@ -23,9 +26,7 @@ def check_extension(filename):
     ext = _extension(filename)
 
     if ext not in ALLOWED_EXTENSIONS:
-        raise DatasetFileError(
-            "فقط فایل‌های اکسل (xlsx.) یا CSV پشتیبانی می‌شوند"
-        )
+        raise DatasetFileError("FILE_TYPE_NOT_SUPPORTED")
 
     return ext
 
@@ -35,10 +36,10 @@ def read_bytes(content, filename):
     ext = check_extension(filename)
 
     if not content:
-        raise DatasetFileError("فایل خالی است")
+        raise DatasetFileError("FILE_EMPTY")
 
     if len(content) > MAX_UPLOAD_BYTES:
-        raise DatasetFileError("حجم فایل بیشتر از ۵۰ مگابایت است")
+        raise DatasetFileError("FILE_TOO_LARGE", {"max_mb": 50})
 
     try:
         if ext == ".csv":
@@ -46,7 +47,7 @@ def read_bytes(content, filename):
         else:
             df = pd.read_excel(io.BytesIO(content))
     except Exception:
-        raise DatasetFileError("فایل قابل خواندن نیست؛ مطمئن شوید یک فایل اکسل یا CSV سالم است")
+        raise DatasetFileError("FILE_UNREADABLE")
 
 
     df = df.dropna(how="all")
@@ -54,10 +55,10 @@ def read_bytes(content, filename):
     df.columns = [str(column).strip() for column in df.columns]
 
     if df.empty or df.shape[1] == 0:
-        raise DatasetFileError("دیتاست هیچ ردیف داده‌ای ندارد")
+        raise DatasetFileError("DATASET_NO_ROWS")
 
     if len(set(df.columns)) != len(df.columns):
-        raise DatasetFileError("نام بعضی ستون‌ها تکراری است")
+        raise DatasetFileError("DATASET_DUPLICATE_COLUMNS", {"columns": sorted({c for c in df.columns if list(df.columns).count(c) > 1})})
 
     return df.reset_index(drop=True)
 

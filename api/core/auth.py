@@ -4,7 +4,9 @@ import hmac
 import secrets
 from datetime import datetime, timedelta, timezone
 
-from fastapi import Header, HTTPException
+from fastapi import Header
+
+from ml_engine.errors import AppError
 
 from api.core.db import connect, now_iso
 
@@ -88,13 +90,13 @@ def get_current_user(authorization: str = Header(default=None)):
     token = _extract_token(authorization)
 
     if not token:
-        raise HTTPException(status_code=401, detail="برای ادامه وارد حساب کاربری شوید")
+        raise AppError("AUTH_REQUIRED", status=401)
 
     with connect() as conn:
 
         row = conn.execute(
             """
-            SELECT users.id, users.name, users.email, users.created_at, sessions.expires_at
+            SELECT users.id, users.name, users.email, users.created_at, users.locale, sessions.expires_at
             FROM sessions JOIN users ON users.id = sessions.user_id
             WHERE sessions.token_hash = ?
             """,
@@ -102,16 +104,17 @@ def get_current_user(authorization: str = Header(default=None)):
         ).fetchone()
 
     if row is None:
-        raise HTTPException(status_code=401, detail="نشست شما منقضی شده است؛ دوباره وارد شوید")
+        raise AppError("AUTH_INVALID_SESSION", status=401)
 
     if row["expires_at"] < now_iso():
         delete_session(token)
-        raise HTTPException(status_code=401, detail="نشست شما منقضی شده است؛ دوباره وارد شوید")
+        raise AppError("AUTH_INVALID_SESSION", status=401)
 
     return {
         "id": row["id"],
         "name": row["name"],
         "email": row["email"],
         "created_at": row["created_at"],
+        "locale": row["locale"],
         "token": token,
     }
