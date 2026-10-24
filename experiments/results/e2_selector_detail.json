@@ -1,0 +1,1322 @@
+[
+ {
+  "dataset":"iris",
+  "profile":"accuracy",
+  "ranking":[
+   "Random Forest",
+   "XGBoost",
+   "Logistic Regression",
+   "SVM",
+   "KNN",
+   "Decision Tree"
+  ],
+  "scores":{
+   "Random Forest":70.8,
+   "XGBoost":66.7,
+   "Logistic Regression":54.2,
+   "SVM":54.2,
+   "KNN":54.2,
+   "Decision Tree":50.0
+  },
+  "empirical_best":"SVM",
+  "top1":0.0,
+  "top3":0.0,
+  "rr":0.25,
+  "ndcg":0.462172023,
+  "regret":0.0332497911
+ },
+ {
+  "dataset":"iris",
+  "profile":"speed",
+  "ranking":[
+   "Logistic Regression",
+   "Decision Tree",
+   "Random Forest",
+   "SVM",
+   "KNN",
+   "XGBoost"
+  ],
+  "scores":{
+   "Logistic Regression":81.2,
+   "Decision Tree":75.0,
+   "Random Forest":56.2,
+   "SVM":56.2,
+   "KNN":56.2,
+   "XGBoost":50.0
+  },
+  "empirical_best":"SVM",
+  "top1":0.0,
+  "top3":0.0,
+  "rr":0.25,
+  "ndcg":0.462172023,
+  "regret":0.0332497911
+ },
+ {
+  "dataset":"iris",
+  "profile":"interpretability",
+  "ranking":[
+   "Logistic Regression",
+   "Decision Tree",
+   "Random Forest",
+   "SVM",
+   "KNN",
+   "XGBoost"
+  ],
+  "scores":{
+   "Logistic Regression":81.2,
+   "Decision Tree":75.0,
+   "Random Forest":56.2,
+   "SVM":56.2,
+   "KNN":56.2,
+   "XGBoost":50.0
+  },
+  "empirical_best":"SVM",
+  "top1":0.0,
+  "top3":0.0,
+  "rr":0.25,
+  "ndcg":0.462172023,
+  "regret":0.0332497911
+ },
+ {
+  "dataset":"wine",
+  "profile":"accuracy",
+  "ranking":[
+   "Random Forest",
+   "XGBoost",
+   "Logistic Regression",
+   "SVM",
+   "KNN",
+   "Decision Tree"
+  ],
+  "scores":{
+   "Random Forest":78.1,
+   "XGBoost":75.0,
+   "Logistic Regression":53.1,
+   "SVM":53.1,
+   "KNN":53.1,
+   "Decision Tree":50.0
+  },
+  "empirical_best":"Random Forest",
+  "top1":1.0,
+  "top3":1.0,
+  "rr":1.0,
+  "ndcg":0.9992408584,
+  "regret":0.0
+ },
+ {
+  "dataset":"wine",
+  "profile":"speed",
+  "ranking":[
+   "Logistic Regression",
+   "Random Forest",
+   "Decision Tree",
+   "XGBoost",
+   "SVM",
+   "KNN"
+  ],
+  "scores":{
+   "Logistic Regression":70.8,
+   "Random Forest":70.8,
+   "Decision Tree":66.7,
+   "XGBoost":66.7,
+   "SVM":54.2,
+   "KNN":54.2
+  },
+  "empirical_best":"Random Forest",
+  "top1":0.0,
+  "top3":1.0,
+  "rr":0.5,
+  "ndcg":0.833977889,
+  "regret":0.0290381125
+ },
+ {
+  "dataset":"wine",
+  "profile":"interpretability",
+  "ranking":[
+   "Logistic Regression",
+   "Random Forest",
+   "Decision Tree",
+   "XGBoost",
+   "SVM",
+   "KNN"
+  ],
+  "scores":{
+   "Logistic Regression":70.8,
+   "Random Forest":70.8,
+   "Decision Tree":66.7,
+   "XGBoost":66.7,
+   "SVM":54.2,
+   "KNN":54.2
+  },
+  "empirical_best":"Random Forest",
+  "top1":0.0,
+  "top3":1.0,
+  "rr":0.5,
+  "ndcg":0.833977889,
+  "regret":0.0290381125
+ },
+ {
+  "dataset":"breast_cancer",
+  "profile":"accuracy",
+  "ranking":[
+   "Random Forest",
+   "XGBoost",
+   "Logistic Regression",
+   "Decision Tree",
+   "SVM",
+   "KNN"
+  ],
+  "scores":{
+   "Random Forest":80.0,
+   "XGBoost":76.7,
+   "Logistic Regression":50.0,
+   "Decision Tree":50.0,
+   "SVM":50.0,
+   "KNN":50.0
+  },
+  "empirical_best":"SVM",
+  "top1":0.0,
+  "top3":1.0,
+  "rr":0.5,
+  "ndcg":0.9302348407,
+  "regret":0.0097909134
+ },
+ {
+  "dataset":"breast_cancer",
+  "profile":"speed",
+  "ranking":[
+   "Random Forest",
+   "Logistic Regression",
+   "Decision Tree",
+   "XGBoost",
+   "SVM",
+   "KNN"
+  ],
+  "scores":{
+   "Random Forest":72.7,
+   "Logistic Regression":68.2,
+   "Decision Tree":68.2,
+   "XGBoost":68.2,
+   "SVM":50.0,
+   "KNN":50.0
+  },
+  "empirical_best":"SVM",
+  "top1":0.0,
+  "top3":0.0,
+  "rr":0.25,
+  "ndcg":0.8934533935,
+  "regret":0.0097909134
+ },
+ {
+  "dataset":"breast_cancer",
+  "profile":"interpretability",
+  "ranking":[
+   "Random Forest",
+   "Logistic Regression",
+   "Decision Tree",
+   "XGBoost",
+   "SVM",
+   "KNN"
+  ],
+  "scores":{
+   "Random Forest":72.7,
+   "Logistic Regression":68.2,
+   "Decision Tree":68.2,
+   "XGBoost":68.2,
+   "SVM":50.0,
+   "KNN":50.0
+  },
+  "empirical_best":"SVM",
+  "top1":0.0,
+  "top3":0.0,
+  "rr":0.25,
+  "ndcg":0.8934533935,
+  "regret":0.0097909134
+ },
+ {
+  "dataset":"digits",
+  "profile":"accuracy",
+  "ranking":[
+   "Random Forest",
+   "XGBoost",
+   "SVM",
+   "Logistic Regression",
+   "Decision Tree",
+   "KNN"
+  ],
+  "scores":{
+   "Random Forest":73.5,
+   "XGBoost":73.5,
+   "SVM":61.8,
+   "Logistic Regression":50.0,
+   "Decision Tree":50.0,
+   "KNN":50.0
+  },
+  "empirical_best":"SVM",
+  "top1":0.0,
+  "top3":1.0,
+  "rr":0.3333333333,
+  "ndcg":0.979094937,
+  "regret":0.0029796768
+ },
+ {
+  "dataset":"digits",
+  "profile":"speed",
+  "ranking":[
+   "Logistic Regression",
+   "Decision Tree",
+   "Random Forest",
+   "XGBoost",
+   "SVM",
+   "KNN"
+  ],
+  "scores":{
+   "Logistic Regression":65.4,
+   "Decision Tree":65.4,
+   "Random Forest":65.4,
+   "XGBoost":65.4,
+   "SVM":65.4,
+   "KNN":50.0
+  },
+  "empirical_best":"SVM",
+  "top1":0.0,
+  "top3":0.0,
+  "rr":0.2,
+  "ndcg":0.9012102956,
+  "regret":0.0028700328
+ },
+ {
+  "dataset":"digits",
+  "profile":"interpretability",
+  "ranking":[
+   "Logistic Regression",
+   "Decision Tree",
+   "Random Forest",
+   "XGBoost",
+   "SVM",
+   "KNN"
+  ],
+  "scores":{
+   "Logistic Regression":65.4,
+   "Decision Tree":65.4,
+   "Random Forest":65.4,
+   "XGBoost":65.4,
+   "SVM":65.4,
+   "KNN":50.0
+  },
+  "empirical_best":"SVM",
+  "top1":0.0,
+  "top3":0.0,
+  "rr":0.2,
+  "ndcg":0.9012102956,
+  "regret":0.0028700328
+ },
+ {
+  "dataset":"titanic",
+  "profile":"accuracy",
+  "ranking":[
+   "Random Forest",
+   "XGBoost",
+   "Logistic Regression",
+   "Decision Tree",
+   "SVM",
+   "KNN"
+  ],
+  "scores":{
+   "Random Forest":80.0,
+   "XGBoost":76.7,
+   "Logistic Regression":50.0,
+   "Decision Tree":50.0,
+   "SVM":50.0,
+   "KNN":50.0
+  },
+  "empirical_best":"Decision Tree",
+  "top1":0.0,
+  "top3":0.0,
+  "rr":0.25,
+  "ndcg":0.8195158761,
+  "regret":0.0091273588
+ },
+ {
+  "dataset":"titanic",
+  "profile":"speed",
+  "ranking":[
+   "Random Forest",
+   "Logistic Regression",
+   "Decision Tree",
+   "XGBoost",
+   "SVM",
+   "KNN"
+  ],
+  "scores":{
+   "Random Forest":72.7,
+   "Logistic Regression":68.2,
+   "Decision Tree":68.2,
+   "XGBoost":68.2,
+   "SVM":50.0,
+   "KNN":50.0
+  },
+  "empirical_best":"Decision Tree",
+  "top1":0.0,
+  "top3":1.0,
+  "rr":0.3333333333,
+  "ndcg":0.8375703068,
+  "regret":0.0091273588
+ },
+ {
+  "dataset":"titanic",
+  "profile":"interpretability",
+  "ranking":[
+   "Random Forest",
+   "Logistic Regression",
+   "Decision Tree",
+   "XGBoost",
+   "SVM",
+   "KNN"
+  ],
+  "scores":{
+   "Random Forest":72.7,
+   "Logistic Regression":68.2,
+   "Decision Tree":68.2,
+   "XGBoost":68.2,
+   "SVM":50.0,
+   "KNN":50.0
+  },
+  "empirical_best":"Decision Tree",
+  "top1":0.0,
+  "top3":1.0,
+  "rr":0.3333333333,
+  "ndcg":0.8375703068,
+  "regret":0.0091273588
+ },
+ {
+  "dataset":"penguins",
+  "profile":"accuracy",
+  "ranking":[
+   "Random Forest",
+   "XGBoost",
+   "Logistic Regression",
+   "SVM",
+   "KNN",
+   "Decision Tree"
+  ],
+  "scores":{
+   "Random Forest":70.8,
+   "XGBoost":66.7,
+   "Logistic Regression":54.2,
+   "SVM":54.2,
+   "KNN":54.2,
+   "Decision Tree":50.0
+  },
+  "empirical_best":"Decision Tree",
+  "top1":1.0,
+  "top3":1.0,
+  "rr":1.0,
+  "ndcg":0.9438661545,
+  "regret":0.0
+ },
+ {
+  "dataset":"penguins",
+  "profile":"speed",
+  "ranking":[
+   "Logistic Regression",
+   "Decision Tree",
+   "Random Forest",
+   "SVM",
+   "KNN",
+   "XGBoost"
+  ],
+  "scores":{
+   "Logistic Regression":81.2,
+   "Decision Tree":75.0,
+   "Random Forest":56.2,
+   "SVM":56.2,
+   "KNN":56.2,
+   "XGBoost":50.0
+  },
+  "empirical_best":"Decision Tree",
+  "top1":0.0,
+  "top3":1.0,
+  "rr":0.5,
+  "ndcg":0.7486761295,
+  "regret":0.0171439704
+ },
+ {
+  "dataset":"penguins",
+  "profile":"interpretability",
+  "ranking":[
+   "Logistic Regression",
+   "Decision Tree",
+   "Random Forest",
+   "SVM",
+   "KNN",
+   "XGBoost"
+  ],
+  "scores":{
+   "Logistic Regression":81.2,
+   "Decision Tree":75.0,
+   "Random Forest":56.2,
+   "SVM":56.2,
+   "KNN":56.2,
+   "XGBoost":50.0
+  },
+  "empirical_best":"Decision Tree",
+  "top1":0.0,
+  "top3":1.0,
+  "rr":0.5,
+  "ndcg":0.7486761295,
+  "regret":0.0171439704
+ },
+ {
+  "dataset":"telco_churn",
+  "profile":"accuracy",
+  "ranking":[
+   "Random Forest",
+   "XGBoost",
+   "Logistic Regression",
+   "Decision Tree",
+   "SVM",
+   "KNN"
+  ],
+  "scores":{
+   "Random Forest":70.8,
+   "XGBoost":70.8,
+   "Logistic Regression":50.0,
+   "Decision Tree":50.0,
+   "SVM":45.8,
+   "KNN":45.8
+  },
+  "empirical_best":"Logistic Regression",
+  "top1":0.0,
+  "top3":1.0,
+  "rr":0.3333333333,
+  "ndcg":0.8480097213,
+  "regret":0.0453434607
+ },
+ {
+  "dataset":"telco_churn",
+  "profile":"speed",
+  "ranking":[
+   "Logistic Regression",
+   "Decision Tree",
+   "Random Forest",
+   "XGBoost",
+   "SVM",
+   "KNN"
+  ],
+  "scores":{
+   "Logistic Regression":75.0,
+   "Decision Tree":75.0,
+   "Random Forest":56.2,
+   "XGBoost":56.2,
+   "SVM":43.8,
+   "KNN":43.8
+  },
+  "empirical_best":"Logistic Regression",
+  "top1":1.0,
+  "top3":1.0,
+  "rr":1.0,
+  "ndcg":0.9078167419,
+  "regret":0.0
+ },
+ {
+  "dataset":"telco_churn",
+  "profile":"interpretability",
+  "ranking":[
+   "Logistic Regression",
+   "Decision Tree",
+   "Random Forest",
+   "XGBoost",
+   "SVM",
+   "KNN"
+  ],
+  "scores":{
+   "Logistic Regression":75.0,
+   "Decision Tree":75.0,
+   "Random Forest":56.2,
+   "XGBoost":56.2,
+   "SVM":43.8,
+   "KNN":43.8
+  },
+  "empirical_best":"Logistic Regression",
+  "top1":1.0,
+  "top3":1.0,
+  "rr":1.0,
+  "ndcg":0.9078167419,
+  "regret":0.0
+ },
+ {
+  "dataset":"pima_diabetes",
+  "profile":"accuracy",
+  "ranking":[
+   "Random Forest",
+   "XGBoost",
+   "Logistic Regression",
+   "Decision Tree",
+   "SVM",
+   "KNN"
+  ],
+  "scores":{
+   "Random Forest":80.0,
+   "XGBoost":76.7,
+   "Logistic Regression":50.0,
+   "Decision Tree":50.0,
+   "SVM":50.0,
+   "KNN":50.0
+  },
+  "empirical_best":"SVM",
+  "top1":0.0,
+  "top3":1.0,
+  "rr":0.5,
+  "ndcg":0.9144261839,
+  "regret":0.0114426429
+ },
+ {
+  "dataset":"pima_diabetes",
+  "profile":"speed",
+  "ranking":[
+   "Random Forest",
+   "Logistic Regression",
+   "Decision Tree",
+   "XGBoost",
+   "SVM",
+   "KNN"
+  ],
+  "scores":{
+   "Random Forest":72.7,
+   "Logistic Regression":68.2,
+   "Decision Tree":68.2,
+   "XGBoost":68.2,
+   "SVM":50.0,
+   "KNN":50.0
+  },
+  "empirical_best":"SVM",
+  "top1":0.0,
+  "top3":0.0,
+  "rr":0.25,
+  "ndcg":0.8388291304,
+  "regret":0.0114426429
+ },
+ {
+  "dataset":"pima_diabetes",
+  "profile":"interpretability",
+  "ranking":[
+   "Random Forest",
+   "Logistic Regression",
+   "Decision Tree",
+   "XGBoost",
+   "SVM",
+   "KNN"
+  ],
+  "scores":{
+   "Random Forest":72.7,
+   "Logistic Regression":68.2,
+   "Decision Tree":68.2,
+   "XGBoost":68.2,
+   "SVM":50.0,
+   "KNN":50.0
+  },
+  "empirical_best":"SVM",
+  "top1":0.0,
+  "top3":0.0,
+  "rr":0.25,
+  "ndcg":0.8388291304,
+  "regret":0.0114426429
+ },
+ {
+  "dataset":"banknote",
+  "profile":"accuracy",
+  "ranking":[
+   "Random Forest",
+   "XGBoost",
+   "Logistic Regression",
+   "Decision Tree",
+   "SVM",
+   "KNN"
+  ],
+  "scores":{
+   "Random Forest":80.0,
+   "XGBoost":76.7,
+   "Logistic Regression":50.0,
+   "Decision Tree":50.0,
+   "SVM":50.0,
+   "KNN":50.0
+  },
+  "empirical_best":"KNN",
+  "top1":0.0,
+  "top3":0.0,
+  "rr":0.2,
+  "ndcg":0.8847489379,
+  "regret":0.0073878343
+ },
+ {
+  "dataset":"banknote",
+  "profile":"speed",
+  "ranking":[
+   "Random Forest",
+   "Logistic Regression",
+   "Decision Tree",
+   "XGBoost",
+   "SVM",
+   "KNN"
+  ],
+  "scores":{
+   "Random Forest":72.7,
+   "Logistic Regression":68.2,
+   "Decision Tree":68.2,
+   "XGBoost":68.2,
+   "SVM":50.0,
+   "KNN":50.0
+  },
+  "empirical_best":"KNN",
+  "top1":0.0,
+  "top3":0.0,
+  "rr":0.2,
+  "ndcg":0.8332322347,
+  "regret":0.0073878343
+ },
+ {
+  "dataset":"banknote",
+  "profile":"interpretability",
+  "ranking":[
+   "Random Forest",
+   "Logistic Regression",
+   "Decision Tree",
+   "XGBoost",
+   "SVM",
+   "KNN"
+  ],
+  "scores":{
+   "Random Forest":72.7,
+   "Logistic Regression":68.2,
+   "Decision Tree":68.2,
+   "XGBoost":68.2,
+   "SVM":50.0,
+   "KNN":50.0
+  },
+  "empirical_best":"KNN",
+  "top1":0.0,
+  "top3":0.0,
+  "rr":0.2,
+  "ndcg":0.8332322347,
+  "regret":0.0073878343
+ },
+ {
+  "dataset":"ionosphere",
+  "profile":"accuracy",
+  "ranking":[
+   "Random Forest",
+   "XGBoost",
+   "Logistic Regression",
+   "SVM",
+   "KNN",
+   "Decision Tree"
+  ],
+  "scores":{
+   "Random Forest":78.1,
+   "XGBoost":75.0,
+   "Logistic Regression":53.1,
+   "SVM":53.1,
+   "KNN":53.1,
+   "Decision Tree":50.0
+  },
+  "empirical_best":"Random Forest",
+  "top1":1.0,
+  "top3":1.0,
+  "rr":1.0,
+  "ndcg":0.9808130106,
+  "regret":0.0
+ },
+ {
+  "dataset":"ionosphere",
+  "profile":"speed",
+  "ranking":[
+   "Logistic Regression",
+   "Random Forest",
+   "Decision Tree",
+   "XGBoost",
+   "SVM",
+   "KNN"
+  ],
+  "scores":{
+   "Logistic Regression":70.8,
+   "Random Forest":70.8,
+   "Decision Tree":66.7,
+   "XGBoost":66.7,
+   "SVM":54.2,
+   "KNN":54.2
+  },
+  "empirical_best":"Random Forest",
+  "top1":0.0,
+  "top3":1.0,
+  "rr":0.5,
+  "ndcg":0.8702594002,
+  "regret":0.0338075125
+ },
+ {
+  "dataset":"ionosphere",
+  "profile":"interpretability",
+  "ranking":[
+   "Logistic Regression",
+   "Random Forest",
+   "Decision Tree",
+   "XGBoost",
+   "SVM",
+   "KNN"
+  ],
+  "scores":{
+   "Logistic Regression":70.8,
+   "Random Forest":70.8,
+   "Decision Tree":66.7,
+   "XGBoost":66.7,
+   "SVM":54.2,
+   "KNN":54.2
+  },
+  "empirical_best":"Random Forest",
+  "top1":0.0,
+  "top3":1.0,
+  "rr":0.5,
+  "ndcg":0.8702594002,
+  "regret":0.0338075125
+ },
+ {
+  "dataset":"sonar",
+  "profile":"accuracy",
+  "ranking":[
+   "Random Forest",
+   "XGBoost",
+   "SVM",
+   "Logistic Regression",
+   "KNN",
+   "Decision Tree"
+  ],
+  "scores":{
+   "Random Forest":72.5,
+   "XGBoost":70.0,
+   "SVM":62.5,
+   "Logistic Regression":52.5,
+   "KNN":52.5,
+   "Decision Tree":50.0
+  },
+  "empirical_best":"XGBoost",
+  "top1":0.0,
+  "top3":1.0,
+  "rr":0.5,
+  "ndcg":0.8873911365,
+  "regret":0.1022326229
+ },
+ {
+  "dataset":"sonar",
+  "profile":"speed",
+  "ranking":[
+   "Logistic Regression",
+   "Random Forest",
+   "SVM",
+   "Decision Tree",
+   "XGBoost",
+   "KNN"
+  ],
+  "scores":{
+   "Logistic Regression":65.6,
+   "Random Forest":65.6,
+   "SVM":65.6,
+   "Decision Tree":62.5,
+   "XGBoost":62.5,
+   "KNN":53.1
+  },
+  "empirical_best":"XGBoost",
+  "top1":0.0,
+  "top3":0.0,
+  "rr":0.2,
+  "ndcg":0.826646608,
+  "regret":0.0989731373
+ },
+ {
+  "dataset":"sonar",
+  "profile":"interpretability",
+  "ranking":[
+   "Logistic Regression",
+   "Random Forest",
+   "SVM",
+   "Decision Tree",
+   "XGBoost",
+   "KNN"
+  ],
+  "scores":{
+   "Logistic Regression":65.6,
+   "Random Forest":65.6,
+   "SVM":65.6,
+   "Decision Tree":62.5,
+   "XGBoost":62.5,
+   "KNN":53.1
+  },
+  "empirical_best":"XGBoost",
+  "top1":0.0,
+  "top3":0.0,
+  "rr":0.2,
+  "ndcg":0.826646608,
+  "regret":0.0989731373
+ },
+ {
+  "dataset":"glass",
+  "profile":"accuracy",
+  "ranking":[
+   "Random Forest",
+   "XGBoost",
+   "Logistic Regression",
+   "SVM",
+   "KNN",
+   "Decision Tree"
+  ],
+  "scores":{
+   "Random Forest":78.1,
+   "XGBoost":75.0,
+   "Logistic Regression":53.1,
+   "SVM":53.1,
+   "KNN":53.1,
+   "Decision Tree":50.0
+  },
+  "empirical_best":"Random Forest",
+  "top1":1.0,
+  "top3":1.0,
+  "rr":1.0,
+  "ndcg":0.9846495687,
+  "regret":0.0
+ },
+ {
+  "dataset":"glass",
+  "profile":"speed",
+  "ranking":[
+   "Logistic Regression",
+   "Random Forest",
+   "Decision Tree",
+   "XGBoost",
+   "SVM",
+   "KNN"
+  ],
+  "scores":{
+   "Logistic Regression":70.8,
+   "Random Forest":70.8,
+   "Decision Tree":66.7,
+   "XGBoost":66.7,
+   "SVM":54.2,
+   "KNN":54.2
+  },
+  "empirical_best":"Random Forest",
+  "top1":0.0,
+  "top3":1.0,
+  "rr":0.5,
+  "ndcg":0.8115466869,
+  "regret":0.1533991099
+ },
+ {
+  "dataset":"glass",
+  "profile":"interpretability",
+  "ranking":[
+   "Logistic Regression",
+   "Random Forest",
+   "Decision Tree",
+   "XGBoost",
+   "SVM",
+   "KNN"
+  ],
+  "scores":{
+   "Logistic Regression":70.8,
+   "Random Forest":70.8,
+   "Decision Tree":66.7,
+   "XGBoost":66.7,
+   "SVM":54.2,
+   "KNN":54.2
+  },
+  "empirical_best":"Random Forest",
+  "top1":0.0,
+  "top3":1.0,
+  "rr":0.5,
+  "ndcg":0.8115466869,
+  "regret":0.1533991099
+ },
+ {
+  "dataset":"seeds",
+  "profile":"accuracy",
+  "ranking":[
+   "Random Forest",
+   "XGBoost",
+   "Logistic Regression",
+   "SVM",
+   "KNN",
+   "Decision Tree"
+  ],
+  "scores":{
+   "Random Forest":70.8,
+   "XGBoost":66.7,
+   "Logistic Regression":54.2,
+   "SVM":54.2,
+   "KNN":54.2,
+   "Decision Tree":50.0
+  },
+  "empirical_best":"Decision Tree",
+  "top1":0.0,
+  "top3":0.0,
+  "rr":0.1666666667,
+  "ndcg":0.6758088943,
+  "regret":0.0488251693
+ },
+ {
+  "dataset":"seeds",
+  "profile":"speed",
+  "ranking":[
+   "Logistic Regression",
+   "Decision Tree",
+   "Random Forest",
+   "SVM",
+   "KNN",
+   "XGBoost"
+  ],
+  "scores":{
+   "Logistic Regression":81.2,
+   "Decision Tree":75.0,
+   "Random Forest":56.2,
+   "SVM":56.2,
+   "KNN":56.2,
+   "XGBoost":50.0
+  },
+  "empirical_best":"Decision Tree",
+  "top1":0.0,
+  "top3":1.0,
+  "rr":0.5,
+  "ndcg":0.8715464051,
+  "regret":0.0241215575
+ },
+ {
+  "dataset":"seeds",
+  "profile":"interpretability",
+  "ranking":[
+   "Logistic Regression",
+   "Decision Tree",
+   "Random Forest",
+   "SVM",
+   "KNN",
+   "XGBoost"
+  ],
+  "scores":{
+   "Logistic Regression":81.2,
+   "Decision Tree":75.0,
+   "Random Forest":56.2,
+   "SVM":56.2,
+   "KNN":56.2,
+   "XGBoost":50.0
+  },
+  "empirical_best":"Decision Tree",
+  "top1":0.0,
+  "top3":1.0,
+  "rr":0.5,
+  "ndcg":0.8715464051,
+  "regret":0.0241215575
+ },
+ {
+  "dataset":"haberman",
+  "profile":"accuracy",
+  "ranking":[
+   "Random Forest",
+   "XGBoost",
+   "Logistic Regression",
+   "SVM",
+   "KNN",
+   "Decision Tree"
+  ],
+  "scores":{
+   "Random Forest":78.1,
+   "XGBoost":75.0,
+   "Logistic Regression":53.1,
+   "SVM":53.1,
+   "KNN":53.1,
+   "Decision Tree":50.0
+  },
+  "empirical_best":"Random Forest",
+  "top1":1.0,
+  "top3":1.0,
+  "rr":1.0,
+  "ndcg":0.9668407807,
+  "regret":0.0
+ },
+ {
+  "dataset":"haberman",
+  "profile":"speed",
+  "ranking":[
+   "Logistic Regression",
+   "Random Forest",
+   "Decision Tree",
+   "XGBoost",
+   "SVM",
+   "KNN"
+  ],
+  "scores":{
+   "Logistic Regression":70.8,
+   "Random Forest":70.8,
+   "Decision Tree":66.7,
+   "XGBoost":66.7,
+   "SVM":54.2,
+   "KNN":54.2
+  },
+  "empirical_best":"Random Forest",
+  "top1":0.0,
+  "top3":1.0,
+  "rr":0.5,
+  "ndcg":0.8536807912,
+  "regret":0.0578416855
+ },
+ {
+  "dataset":"haberman",
+  "profile":"interpretability",
+  "ranking":[
+   "Logistic Regression",
+   "Random Forest",
+   "Decision Tree",
+   "XGBoost",
+   "SVM",
+   "KNN"
+  ],
+  "scores":{
+   "Logistic Regression":70.8,
+   "Random Forest":70.8,
+   "Decision Tree":66.7,
+   "XGBoost":66.7,
+   "SVM":54.2,
+   "KNN":54.2
+  },
+  "empirical_best":"Random Forest",
+  "top1":0.0,
+  "top3":1.0,
+  "rr":0.5,
+  "ndcg":0.8536807912,
+  "regret":0.0578416855
+ },
+ {
+  "dataset":"ecoli",
+  "profile":"accuracy",
+  "ranking":[
+   "Random Forest",
+   "XGBoost",
+   "Logistic Regression",
+   "SVM",
+   "KNN",
+   "Decision Tree"
+  ],
+  "scores":{
+   "Random Forest":78.1,
+   "XGBoost":75.0,
+   "Logistic Regression":53.1,
+   "SVM":53.1,
+   "KNN":53.1,
+   "Decision Tree":50.0
+  },
+  "empirical_best":"KNN",
+  "top1":0.0,
+  "top3":0.0,
+  "rr":0.2,
+  "ndcg":0.8630722995,
+  "regret":0.0391252857
+ },
+ {
+  "dataset":"ecoli",
+  "profile":"speed",
+  "ranking":[
+   "Logistic Regression",
+   "Random Forest",
+   "Decision Tree",
+   "XGBoost",
+   "SVM",
+   "KNN"
+  ],
+  "scores":{
+   "Logistic Regression":70.8,
+   "Random Forest":70.8,
+   "Decision Tree":66.7,
+   "XGBoost":66.7,
+   "SVM":54.2,
+   "KNN":54.2
+  },
+  "empirical_best":"KNN",
+  "top1":0.0,
+  "top3":0.0,
+  "rr":0.1666666667,
+  "ndcg":0.8954908268,
+  "regret":0.0303856614
+ },
+ {
+  "dataset":"ecoli",
+  "profile":"interpretability",
+  "ranking":[
+   "Logistic Regression",
+   "Random Forest",
+   "Decision Tree",
+   "XGBoost",
+   "SVM",
+   "KNN"
+  ],
+  "scores":{
+   "Logistic Regression":70.8,
+   "Random Forest":70.8,
+   "Decision Tree":66.7,
+   "XGBoost":66.7,
+   "SVM":54.2,
+   "KNN":54.2
+  },
+  "empirical_best":"KNN",
+  "top1":0.0,
+  "top3":0.0,
+  "rr":0.1666666667,
+  "ndcg":0.8954908268,
+  "regret":0.0303856614
+ },
+ {
+  "dataset":"guidml_customers",
+  "profile":"accuracy",
+  "ranking":[
+   "Random Forest",
+   "XGBoost",
+   "Logistic Regression",
+   "Decision Tree",
+   "SVM",
+   "KNN"
+  ],
+  "scores":{
+   "Random Forest":72.7,
+   "XGBoost":68.2,
+   "Logistic Regression":50.0,
+   "Decision Tree":50.0,
+   "SVM":50.0,
+   "KNN":50.0
+  },
+  "empirical_best":"XGBoost",
+  "top1":0.0,
+  "top3":1.0,
+  "rr":0.5,
+  "ndcg":0.7983591851,
+  "regret":0.1183338143
+ },
+ {
+  "dataset":"guidml_customers",
+  "profile":"speed",
+  "ranking":[
+   "Logistic Regression",
+   "Decision Tree",
+   "Random Forest",
+   "XGBoost",
+   "SVM",
+   "KNN"
+  ],
+  "scores":{
+   "Logistic Regression":78.6,
+   "Decision Tree":78.6,
+   "Random Forest":57.1,
+   "XGBoost":50.0,
+   "SVM":50.0,
+   "KNN":50.0
+  },
+  "empirical_best":"XGBoost",
+  "top1":0.0,
+  "top3":0.0,
+  "rr":0.25,
+  "ndcg":0.7703882441,
+  "regret":0.1217065313
+ },
+ {
+  "dataset":"guidml_customers",
+  "profile":"interpretability",
+  "ranking":[
+   "Logistic Regression",
+   "Decision Tree",
+   "Random Forest",
+   "XGBoost",
+   "SVM",
+   "KNN"
+  ],
+  "scores":{
+   "Logistic Regression":78.6,
+   "Decision Tree":78.6,
+   "Random Forest":57.1,
+   "XGBoost":50.0,
+   "SVM":50.0,
+   "KNN":50.0
+  },
+  "empirical_best":"XGBoost",
+  "top1":0.0,
+  "top3":0.0,
+  "rr":0.25,
+  "ndcg":0.7703882441,
+  "regret":0.1217065313
+ },
+ {
+  "dataset":"adult",
+  "profile":"accuracy",
+  "ranking":[
+   "Random Forest",
+   "XGBoost",
+   "Logistic Regression",
+   "Decision Tree",
+   "KNN"
+  ],
+  "scores":{
+   "Random Forest":72.5,
+   "XGBoost":72.5,
+   "Logistic Regression":50.0,
+   "Decision Tree":50.0,
+   "KNN":47.5
+  },
+  "empirical_best":"XGBoost",
+  "top1":0.0,
+  "top3":1.0,
+  "rr":0.5,
+  "ndcg":0.9073101751,
+  "regret":0.0327531491
+ },
+ {
+  "dataset":"adult",
+  "profile":"speed",
+  "ranking":[
+   "Random Forest",
+   "XGBoost",
+   "Logistic Regression",
+   "Decision Tree",
+   "KNN"
+  ],
+  "scores":{
+   "Random Forest":65.6,
+   "XGBoost":65.6,
+   "Logistic Regression":62.5,
+   "Decision Tree":62.5,
+   "KNN":46.9
+  },
+  "empirical_best":"XGBoost",
+  "top1":0.0,
+  "top3":1.0,
+  "rr":0.5,
+  "ndcg":0.9073101751,
+  "regret":0.0327531491
+ },
+ {
+  "dataset":"adult",
+  "profile":"interpretability",
+  "ranking":[
+   "Random Forest",
+   "XGBoost",
+   "Logistic Regression",
+   "Decision Tree",
+   "KNN"
+  ],
+  "scores":{
+   "Random Forest":65.6,
+   "XGBoost":65.6,
+   "Logistic Regression":62.5,
+   "Decision Tree":62.5,
+   "KNN":46.9
+  },
+  "empirical_best":"XGBoost",
+  "top1":0.0,
+  "top3":1.0,
+  "rr":0.5,
+  "ndcg":0.9073101751,
+  "regret":0.0327531491
+ }
+]

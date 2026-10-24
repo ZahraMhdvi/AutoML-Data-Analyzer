@@ -112,7 +112,8 @@ def test_classification_project_with_branches(client):
 
     bad = client.post(f"/api/projects/{pid}/versions", headers=headers, files=_file(df.iloc[800:].drop(columns=["City"])))
     assert bad.status_code == 400
-    assert "City" in bad.json()["detail"]
+    assert bad.json()["detail"]["code"] == "SCHEMA_MISMATCH"
+    assert "City" in bad.json()["detail"]["params"]["missing"]
     assert client.get(f"/api/projects/{pid}", headers=headers).json()["project"]["version_count"] == 2
 
 
@@ -165,19 +166,22 @@ def test_clustering_project_with_branches(client):
     assert added.json()["project"]["total_rows"] == 150
 
 
+class FakeLLM:
+    models = ["fake/model-a", "fake/model-b"]
+
+    def suggest(self, profile, numeric_columns, request_id=None):
+        assert profile["privacy"]["row_values_shared"] is False
+        return ({"features": ["Monthly_Spending", "Monthly_Visits"], "rejected_features": [],
+                 "directions": {"Monthly_Spending": 1, "Monthly_Visits": 1}, "target_name": "value_tier",
+                 "reason_en": "test", "reason_fa": "آزمون"},
+                {"successful_model": "fake/model-a", "attempts": [{"model": "fake/model-a", "error_code": None}],
+                 "latency_ms": 1.0})
+
+
 def test_ai_target_project(client, monkeypatch):
 
-    class FakeLLM:
-        def generate_target_definition(self, profile):
-            return {
-                "target_name": "value_tier",
-                "classes": ["Low", "Medium", "High"],
-                "important_features": ["Monthly_Spending", "Monthly_Visits"],
-                "reason": "test",
-            }
-
-    from api.routes import ai_target
-    monkeypatch.setattr(ai_target, "llm_service", FakeLLM())
+    from api.services import project_service
+    monkeypatch.setattr(project_service, "get_llm_service", lambda: FakeLLM())
 
     headers = _signup(client)
     df = pd.read_excel(CLUSTERING_FILE)
@@ -186,7 +190,12 @@ def test_ai_target_project(client, monkeypatch):
 
     generated = client.post(f"/api/projects/{pid}/ai-target", headers=headers)
     assert generated.status_code == 200, generated.text
-    assert len(generated.json()["classes"]) == 3
+    body = generated.json()
+    assert len(body["classes"]) == 3
+    assert body["source"] == "llm"
+    assert body["llm"]["status"] == "SUCCESS" and body["llm"]["successful_model"] == "fake/model-a"
+    assert body["llm"]["fallback_used"] is False
+    assert body["definition"]["cutoffs"] and body["definition"]["rule"]["version"] == "2.0"
 
     prefs = {"main_goal": "interpretability", "data_growth": "static_data"}
     run = client.post(f"/api/projects/{pid}/run", headers=headers,
@@ -194,12 +203,45 @@ def test_ai_target_project(client, monkeypatch):
     assert run.status_code == 200, run.text
     project = run.json()["project"]
     assert project["config"]["target"] == "generated_target"
-    assert project["config"]["ai_target"]["important_features"] == ["Monthly_Spending", "Monthly_Visits"]
+    assert project["config"]["target_type"] == "pseudo"
+    assert project["config"]["ai_target"]["features"] == ["Monthly_Spending", "Monthly_Visits"]
+    result = project["versions"][0]["result"]
+    assert result["ablation"]["condition_b_without_generator_features"] is not None
+    assert result["provenance"]["target_origin"] == "pseudo"
+    cutoffs_v1 = project["config"]["ai_target"]["cutoffs"]
 
-
-    monkeypatch.setattr(ai_target, "llm_service", None)
+    monkeypatch.setattr(project_service, "get_llm_service", lambda: None)
     added = client.post(f"/api/projects/{pid}/versions", headers=headers, files=_file(df.iloc[100:]))
     assert added.status_code == 200, added.text
+    project = added.json()["project"]
+
+    assert project["config"]["ai_target"]["cutoffs"] == cutoffs_v1
+    drift = project["versions"][1]["result"]["ablation"]["label_drift_if_regenerated"]
+    assert 0.0 <= drift["changed_ratio"] <= 1.0
+
+    audit = client.get(f"/api/projects/{pid}/versions/2/audit", headers=headers)
+    assert audit.status_code == 200 and audit.json()["provenance"]["target_origin"] == "pseudo"
+    assert client.get(f"/api/projects/{pid}/versions/2/audit?format=csv", headers=headers).text.startswith("field,value")
+
+
+def test_ai_target_fallback_is_explicit(client, monkeypatch):
+
+    from api.services import project_service
+    monkeypatch.setattr(project_service, "get_llm_service", lambda: None)
+
+    headers = _signup(client)
+    df = pd.read_excel(CLUSTERING_FILE)
+    pid = client.post("/api/projects", headers=headers, files=_file(df)).json()["project"]["id"]
+
+    body = client.post(f"/api/projects/{pid}/ai-target", headers=headers).json()
+    assert body["source"] == "statistical"
+    assert body["llm"]["actual_method"] == "statistical"
+    assert body["llm"]["fallback_used"] is True and body["llm"]["fallback_reason"] == "NOT_CONFIGURED"
+    assert body["notice"]["code"] == "LLM_FALLBACK_STATISTICAL"
+
+    aborted = client.post(f"/api/projects/{pid}/ai-target", headers=headers, json={"fallback_policy": "abort"})
+    assert aborted.status_code == 503
+    assert aborted.json()["detail"]["code"] == "LLM_NOT_CONFIGURED"
 
 
 def test_manual_target_validation(client):
