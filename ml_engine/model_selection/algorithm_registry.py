@@ -173,3 +173,36 @@ CLUSTERING_ALGORITHMS = {
     }
 
 }
+
+
+
+SVM_MAX_ROWS = 20000
+KNN_MAX_ROWS = 50000
+AGGLOMERATIVE_MAX_ROWS = 10000
+
+
+def eligibility(algorithm, problem_type, rows, preferences=None):
+
+
+    preferences = preferences or {}
+
+    if problem_type == "classification":
+        if algorithm == "SVM" and rows > SVM_MAX_ROWS:
+            return "SVM_TOO_MANY_ROWS"
+        if algorithm == "KNN" and rows > KNN_MAX_ROWS:
+            return "KNN_TOO_MANY_ROWS"
+        if algorithm == "XGBoost":
+            try:
+                import xgboost  # noqa: F401
+            except Exception:
+                return "LIBRARY_NOT_INSTALLED"
+        return None
+
+    if problem_type == "clustering":
+        if algorithm == "DBSCAN" and preferences.get("cluster_count_known"):
+            return "DBSCAN_CANNOT_FIX_CLUSTER_COUNT"
+        if algorithm == "Agglomerative Clustering" and rows > AGGLOMERATIVE_MAX_ROWS:
+            return "AGGLOMERATIVE_TOO_MANY_ROWS"
+        return None
+
+    return "UNSUPPORTED_PROBLEM_TYPE"
