@@ -42,20 +42,9 @@ the Django prototype in `backend/` is not used by the application.
 ## Tests
 
 ```bash
-python -m pytest -q          # 50 tests: leakage, pseudo-targets, LLM contract (mocked), scoring, clustering, validation, API
+python -m pytest -q          # 50 tests
 ```
 
-## Experiments (paper)
-
-```bash
-python experiments/prepare_datasets.py                 # downloads public datasets to experiments/data
-python experiments/run_benchmarks.py                   # E1 classification, E2 selector, E3 clustering, E4 pseudo-target
-python experiments/leakage_comparison.py --original <checkout of the previous version>   # E5
-python experiments/llm_reliability.py --data experiments/data/clean   # E6, needs OPENROUTER_API_KEY + network
-python experiments/ui_walkthrough.py                   # screenshots (server running, playwright installed)
-```
-
-Results used in the paper are in `experiments/results/`; figures and screenshots in `docs/`.
 
 ## Data storage
 
